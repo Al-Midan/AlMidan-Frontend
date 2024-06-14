@@ -9,6 +9,8 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import OtpPage from "@/components/ui/OtpPage";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import { REGISTER } from "@/shared/helpers/endpoints";
 const Register = () => {
   const [response, setResponse] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -67,10 +69,8 @@ const Register = () => {
     });
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/user-service/register",
-        formValues
-      );
+      const response = await axiosInstance.post(REGISTER, formValues);
+      console.log("Response from backend: REGISTER", response);
 
       console.log("Response from backend:", response);
       toast.dismiss(loadingToastId);
@@ -139,7 +139,7 @@ const Register = () => {
             </p>
           </div>
           <AnimatePresence>
-            {response && formData  ? (
+            {response && formData ? (
               <motion.div
                 key="otp-page"
                 initial={{ opacity: 0, y: 20 }}

@@ -5,6 +5,8 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { MultiStepLoader as Loader } from "../../../../components/ui/multi-step-loader";
+import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
+import { CREATECOURSE } from "@/shared/helpers/endpoints";
 const NewCoursePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [courseName, setCourseName] = useState("");
@@ -75,11 +77,37 @@ const NewCoursePage: React.FC = () => {
     event.preventDefault();
 
     if (validateForm()) {
-      const response = await axios.post("http://localhost:5002/course-service/createCourse");
-      if (response.status === 200) {
-        setLoading(true);
+      setLoading(true);
+      try {
+        const courseData = {
+          courseName,
+          courseDescription,
+          courseCategory,
+          coursePrice,
+          courseImage: previewUrl,
+        };
+
+        const response = await axiosInstanceMultipart.post(
+          CREATECOURSE,
+          courseData
+        );
+
+        if (response.status === 200) {
+          // Handle successful response
+          console.log("Course created successfully:", response.data);
+        } else {
+          // Handle non-200 responses
+          console.error(
+            "Error creating course:",
+            response.status,
+            response.data
+          );
+        }
+      } catch (error) {
+        console.error("Error creating course:", error);
+      } finally {
+        setLoading(false);
       }
-      console.log(response);
     }
   };
 
@@ -103,22 +131,31 @@ const NewCoursePage: React.FC = () => {
           <div className="flex flex-row">
             <div className="flex flex-col w-1/2 p-2">
               <div>
-                <label htmlFor="courseName" className="block mb-2 text-base text-gray-800 font-semibold">
+                <label
+                  htmlFor="courseName"
+                  className="block mb-2 text-base text-gray-800 font-semibold"
+                >
                   Course name
                 </label>
                 <input
                   type="string"
                   id="courseName"
-                  value={courseName}
+                  // value={courseName}
                   onChange={(e) => setCourseName(e.target.value)}
                   className="form-control text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-800 bg-black-100"
                   placeholder="Eg: Web Development"
-                  
                 />
-                {errors.courseName && <p className="text-red-500 text-sm mt-1">{errors.courseName}</p>}
+                {errors.courseName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.courseName}
+                  </p>
+                )}
               </div>
               <div className="mt-5">
-                <label htmlFor="courseDescription" className="block mb-2 text-base text-gray-800 font-semibold">
+                <label
+                  htmlFor="courseDescription"
+                  className="block mb-2 text-base text-gray-800 font-semibold"
+                >
                   Description
                 </label>
                 <textarea
@@ -129,10 +166,17 @@ const NewCoursePage: React.FC = () => {
                   className="block font-sans font-normal text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
                   placeholder="This course is..."
                 ></textarea>
-                {errors.courseDescription && <p className="text-red-500 text-sm mt-1">{errors.courseDescription}</p>}
+                {errors.courseDescription && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.courseDescription}
+                  </p>
+                )}
               </div>
               <div className="mt-5">
-                <label htmlFor="courseCategory" className="block mb-2 text-base text-gray-800 font-semibold">
+                <label
+                  htmlFor="courseCategory"
+                  className="block mb-2 text-base text-gray-800 font-semibold"
+                >
                   Category
                 </label>
                 <input
@@ -142,28 +186,41 @@ const NewCoursePage: React.FC = () => {
                   onChange={(e) => setCourseCategory(e.target.value)}
                   className="block font-sans font-normal text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
                   placeholder="Enter category"
-                  
                 />
-                {errors.courseCategory && <p className="text-red-500 text-sm mt-1">{errors.courseCategory}</p>}
+                {errors.courseCategory && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.courseCategory}
+                  </p>
+                )}
               </div>
               <div className="mt-5">
-                <label htmlFor="coursePrice" className="block mb-2 text-base text-gray-800 font-semibold">
+                <label
+                  htmlFor="coursePrice"
+                  className="block mb-2 text-base text-gray-800 font-semibold"
+                >
                   Price
                 </label>
                 <input
                   type="number"
                   id="coursePrice"
-                  value={coursePrice}
+                  //  value={coursePrice}
                   onChange={(e) => setCoursePrice(Number(e.target.value))}
                   className="block font-sans font-normal text-gray-500 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
-                  placeholder="1000"
+                  placeholder="999"
                   min={1}
                 />
-                {errors.coursePrice && <p className="text-red-500 text-sm mt-1">{errors.coursePrice}</p>}
+                {errors.coursePrice && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.coursePrice}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex flex-col w-1/2 p-2">
-              <label htmlFor="courseImage" className="block mb-2 text-base text-gray-800 font-semibold">
+              <label
+                htmlFor="courseImage"
+                className="block mb-2 text-base text-gray-800 font-semibold"
+              >
                 Thumbnail image
               </label>
               <div className="flex items-center justify-center w-full">
@@ -189,9 +246,13 @@ const NewCoursePage: React.FC = () => {
                         />
                       </svg>
                       <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload image</span>
+                        <span className="font-semibold">
+                          Click to upload image
+                        </span>
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SVG, PNG, JPG
+                      </p>
                     </div>
                     <input
                       id="courseImage"
@@ -222,27 +283,26 @@ const NewCoursePage: React.FC = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <div className="w-20 mt-6 mr-8">
-              
+            <div className="w-20 mt-6 mr-20">
+              <button
+                className="bg-blue-800 hover:bg-[#39C3EF]/90 text-black mx-auto text-sm transition font-medium duration-200 h-10 rounded-lg px-4 flex items-center justify-center"
+                style={{
+                  boxShadow:
+                    "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Verify Account
+              </button>
 
-              
-            <button
-                      className="bg-[#6de741] hover:bg-[#39C3EF]/90 text-black mx-auto text-sm md:text-base transition font-medium duration-200 h-10 rounded-lg px-10 flex items-center justify-center"
-                      style={{
-                        boxShadow:
-                          "0px -1px 0px 0px #ffffff40 inset, 0px 1px 0px 0px #ffffff40 inset",
-                      }}
-                    >
-                      Verify Account
-                    </button>
-                    {loading && (
-                      <button
-                        className="fixed top-4 right-4 text-black dark:text-white z-[120]"
-                        onClick={() => setLoading(false)}
-                      >
-                        <IconSquareRoundedX className="h-10 w-10" />
-                      </button>
-                    )}
+              {loading && (
+                <button
+                  className="fixed top-4 right-4 text-black dark:text-white z-[120]"
+                  onClick={() => setLoading(false)}
+                >
+                  <IconSquareRoundedX className="h-10 w-10" />
+                </button>
+              )}
             </div>
           </div>
         </form>

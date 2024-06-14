@@ -6,6 +6,8 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FormValues from "../../app/(auth)/register/interface";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import { OTP } from "@/shared/helpers/endpoints";
 interface OtpPageProps {
   formData: FormValues;
 }
@@ -25,10 +27,8 @@ const OtpPage: React.FC<OtpPageProps> = ({ formData }) => {
       setOtpError("");
     }
     try {
-      const response = await axios.post(
-        "http://localhost:5000/user-service/otp-verification",
-        otp
-      );
+      const response = await axiosInstance.post(OTP, otp);
+      console.log("Response from backend:", response);
       if (response.status === 200) {
         setLoading(true);
       }

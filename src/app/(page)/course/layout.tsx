@@ -1,8 +1,7 @@
 import React, { ReactNode } from 'react';
-import Footer from "../../../../components/LandingPage/Footer";
-import { FloatingNav } from "../../../../components/ui/FloatingNavbar";
-import Link from "next/link";
-
+import Footer from "../../../components/LandingPage/Footer";
+import { FloatingNav } from "../../../components/ui/FloatingNavbar";
+// import "../../globals.css";
 const navItems = [
   { name: "Courses", link: "/course" },
   { name: "Services", link: "/services" },

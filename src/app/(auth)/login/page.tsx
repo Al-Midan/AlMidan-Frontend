@@ -8,8 +8,13 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import FormValues from "./interface";
 import { useRouter } from "next/navigation";
+// import { useDispatch } from "react-redux";
+// import { setUser } from "../../../redux/userSlice";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import { LOGIN } from "@/shared/helpers/endpoints";
 const Login = () => {
   const router = useRouter();
+  // const dispatch = useDispatch();
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -62,14 +67,7 @@ const Login = () => {
     });
 
     try {
-      console.log("Request Headers:", axios.defaults.headers);
-
-      const response = await axios.post(
-        "http://localhost:5000/user-service/login",
-        formValues,
-        { withCredentials: true }
-      );
-
+      const response = await axiosInstance.post(LOGIN, formValues);
       console.log("Response from backend:", response);
 
       // Extracting the user data from the response
@@ -84,6 +82,7 @@ const Login = () => {
       }
       // Storing the user data in localStorage
       console.log("User data stored", userData);
+      // dispatch(setUser(userData));
       localStorage.setItem("userData", JSON.stringify(userData));
       // After successful login
       localStorage.setItem("accessToken", userData.accessToken);
@@ -103,12 +102,7 @@ const Login = () => {
         router.replace("/home");
       }
     } catch (error) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response
-        // &&
-        // error.response.status === 401
-      ) {
+      if (axios.isAxiosError(error) && error.response) {
         toast.dismiss(loadingToastId);
         const errorMessage = error.response.data.message;
         toast.error(errorMessage, {
@@ -193,9 +187,6 @@ const Login = () => {
                 <p className="text-red-500 mt-1">{confirmPasswordError}</p>
               )}
             </div>
-            {/* <button className="w-full px-4 py-2 text-white font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-600 rounded-lg duration-150">
-              Login
-            </button> */}
             <HoverBorderGradient
               containerClassName="w-full mt-2 px-3 py-2"
               duration={1}
