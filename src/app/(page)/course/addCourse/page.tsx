@@ -4,9 +4,10 @@ import { IconSquareRoundedX } from "@tabler/icons-react";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
-import { MultiStepLoader as Loader } from "../../../../components/ui/multi-step-loader";
+import { Toaster, toast } from "sonner";
 import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 import { CREATECOURSE } from "@/shared/helpers/endpoints";
+import { useRouter } from "next/navigation";
 const NewCoursePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [courseName, setCourseName] = useState("");
@@ -20,7 +21,7 @@ const NewCoursePage: React.FC = () => {
     courseCategory: "",
     coursePrice: "",
   });
-
+  const router = useRouter();
   const onFileSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -78,33 +79,72 @@ const NewCoursePage: React.FC = () => {
 
     if (validateForm()) {
       setLoading(true);
+      const loadingToastId = toast.loading("Processing", {
+        style: { background: "black", color: "white" },
+        position: "top-center",
+      });
       try {
-        const courseData = {
-          courseName,
-          courseDescription,
-          courseCategory,
-          coursePrice,
-          courseImage: previewUrl,
-        };
+        // Retrieve userData from localStorage
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+        const formData = new FormData();
+        formData.append("courseName", courseName);
+        formData.append("courseDescription", courseDescription);
+        formData.append("courseCategory", courseCategory);
+        formData.append("coursePrice", coursePrice.toString());
+
+        // Check if previewUrl is not null before appending
+        if (previewUrl !== null) {
+          const file = new File([previewUrl], "image.jpg", {
+            type: "image/jpeg",
+          });
+          formData.append("courseImage", file);
+        }
+
+        formData.append("userData", JSON.stringify(userData));
+
+        console.log(
+          "Course Data with User Data:",
+          Object.fromEntries(formData.entries())
+        );
 
         const response = await axiosInstanceMultipart.post(
           CREATECOURSE,
-          courseData
+          formData
         );
+        console.log("Response:", response);
+        const Message = response.data.message;
 
         if (response.status === 200) {
+          toast.dismiss(loadingToastId);
+          toast.success(Message, {
+            style: { background: "black", color: "white" },
+            position: "top-center",
+          });
           // Handle successful response
           console.log("Course created successfully:", response.data);
-        } else {
-          // Handle non-200 responses
-          console.error(
-            "Error creating course:",
-            response.status,
-            response.data
-          );
+          setTimeout(() => {
+            const courseId = response.data.newCourse._id;
+            console.log("courseId", courseId);
+
+            router.push(`/course/addCourse/addSection/?courseId=${courseId}`);
+          }, 2000);
         }
       } catch (error) {
-        console.error("Error creating course:", error);
+        if (axios.isAxiosError(error) && error.response) {
+          toast.dismiss(loadingToastId);
+          const errorMessage = error.response.data.message;
+          toast.error(errorMessage, {
+            style: { background: "black", color: "white" },
+            position: "top-center",
+          });
+        } else {
+          toast.dismiss(loadingToastId);
+          console.error("Error creating course:", error);
+          toast.error("Error creating course:", {
+            style: { background: "black", color: "white" },
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -113,6 +153,7 @@ const NewCoursePage: React.FC = () => {
 
   return (
     <div className="bg-black text-gray-800">
+      <Toaster />
       <div className="flex flex-row">
         <div className="w-20 mt-6 ml-6">
           <Link
@@ -142,7 +183,7 @@ const NewCoursePage: React.FC = () => {
                   id="courseName"
                   // value={courseName}
                   onChange={(e) => setCourseName(e.target.value)}
-                  className="form-control text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-800 bg-black-100"
+                  className="form-control text-gray-200 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-800 bg-black-100"
                   placeholder="Eg: Web Development"
                 />
                 {errors.courseName && (
@@ -163,7 +204,7 @@ const NewCoursePage: React.FC = () => {
                   rows={4}
                   value={courseDescription}
                   onChange={(e) => setCourseDescription(e.target.value)}
-                  className="block font-sans font-normal text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
+                  className="block font-sans font-normal text-gray-200 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
                   placeholder="This course is..."
                 ></textarea>
                 {errors.courseDescription && (
@@ -184,7 +225,7 @@ const NewCoursePage: React.FC = () => {
                   id="courseCategory"
                   value={courseCategory}
                   onChange={(e) => setCourseCategory(e.target.value)}
-                  className="block font-sans font-normal text-gray-800 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
+                  className="block font-sans font-normal text-gray-200 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
                   placeholder="Enter category"
                 />
                 {errors.courseCategory && (
@@ -205,7 +246,7 @@ const NewCoursePage: React.FC = () => {
                   id="coursePrice"
                   //  value={coursePrice}
                   onChange={(e) => setCoursePrice(Number(e.target.value))}
-                  className="block font-sans font-normal text-gray-500 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
+                  className="block font-sans font-normal text-gray-200 placeholder-gray-400 text-sm rounded-lg w-full p-3 border-2 border-solid border-gray-700 focus:border-blue-500 bg-black-100"
                   placeholder="999"
                   min={1}
                 />
@@ -292,7 +333,7 @@ const NewCoursePage: React.FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                Verify Account
+                Create Course
               </button>
 
               {loading && (

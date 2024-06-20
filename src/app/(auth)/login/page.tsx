@@ -8,13 +8,13 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import FormValues from "./interface";
 import { useRouter } from "next/navigation";
-// import { useDispatch } from "react-redux";
-// import { setUser } from "../../../redux/userSlice";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../../redux/userSlice";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { LOGIN } from "@/shared/helpers/endpoints";
 const Login = () => {
   const router = useRouter();
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -82,7 +82,7 @@ const Login = () => {
       }
       // Storing the user data in localStorage
       console.log("User data stored", userData);
-      // dispatch(setUser(userData));
+      dispatch(setUser(userData));
       localStorage.setItem("userData", JSON.stringify(userData));
       // After successful login
       localStorage.setItem("accessToken", userData.accessToken);

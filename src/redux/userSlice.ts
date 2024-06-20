@@ -1,36 +1,28 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = {
+  _id: null,
+  username: null,
+  email: null,
+  isBlocked: false,
+  isVerified: false,
+  roles: [],
+  accessToken: null,
+  refreshToken: null,
+};
+
 const userSlice = createSlice({
   name: 'user',
-  initialState: {
-    _id: null,
-    username: null,
-    email: null,
-    isBlocked: false,
-    isVerified: false,
-    roles: [],
-    accessToken: null,
-    refreshToken: null,
-  },
+  initialState,
   reducers: {
-    setUser: (state, action) => {
+    setUser(state, action) {
       return { ...state, ...action.payload };
     },
-    clearUser: (state) => {
-      return {
-        _id: null,
-        username: null,
-        email: null,
-        isBlocked: false,
-        isVerified: false,
-        roles: [],
-        accessToken: null,
-        refreshToken: null,
-      };
+    clearUser(state) {
+      return initialState;
     },
   },
 });
 
 export const { setUser, clearUser } = userSlice.actions;
-
 export default userSlice.reducer;
