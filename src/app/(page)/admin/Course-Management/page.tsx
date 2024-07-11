@@ -4,7 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import axiosInstance from '@/shared/helpers/axiosInstance';
 import { COURSEBLOCK, GETALLCOURSE } from '@/shared/helpers/endpoints';
-
+import { useRouter } from 'next/navigation';
 interface Course {
   _id: string;
   title: string;
@@ -18,6 +18,7 @@ interface Course {
 }
 
 const CoursesPage = () => {
+  const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 6;
@@ -36,7 +37,7 @@ const CoursesPage = () => {
 
   const handleBlockToggle = async (courseId: string, isBlock: boolean) => {
     try {
-      await axios.put(`${COURSEBLOCK}/${courseId}`, { isBlock: !isBlock });
+      await axiosInstance.put(`${COURSEBLOCK}/${courseId}`, { isBlock: !isBlock });
             setCourses(courses.map(course => 
         course._id === courseId ? { ...course, isBlock: !isBlock } : course
       ));
@@ -44,6 +45,13 @@ const CoursesPage = () => {
       console.error('Error toggling block status:', error);
     }
   };
+  const courseView = async (courseId:string)=>{
+    try {
+      router.push(`Course-Management/${courseId}`)
+    } catch (error) {
+     console.log("An error occurred while Going to Course Details Page Admin", error);
+    }
+  }
 
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
@@ -80,7 +88,7 @@ const CoursesPage = () => {
               <p className="text-xs sm:text-sm text-gray-400">Created by: {course.username}</p>
               <p className="text-xs sm:text-sm text-gray-400 mb-4">Sections: {course.sections.length}</p>
               <div className="flex justify-between items-center space-x-3">
-                <button className="flex-grow px-3 py-1.5 bg-indigo-500 bg-opacity-20 text-indigo-300 rounded-full text-sm transition duration-200 hover:bg-opacity-30">
+                <button onClick={()=>courseView(course._id)} className="flex-grow px-3 py-1.5 bg-indigo-500 bg-opacity-20 text-indigo-300 rounded-full text-sm transition duration-200 hover:bg-opacity-30">
                   View Details
                 </button>
                 <button 

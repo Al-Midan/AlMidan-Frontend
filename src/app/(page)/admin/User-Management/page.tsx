@@ -9,6 +9,7 @@ interface User {
   email: string;
   isBlocked: boolean;
   isVerified: boolean;
+  roles:string;
 }
 
 const Page = () => {
@@ -40,7 +41,8 @@ const Page = () => {
   
         console.log("response", response);
         toast.dismiss(loadingToastId);
-        setUsers(response.data.users);
+        const filteredUsers = response.data.users.filter((user: User) => !user.roles.includes('admin'));
+                setUsers(filteredUsers);
         toast.success(response.data.message, {
           style: { background: "black", color: "white" },
           position: "top-center",

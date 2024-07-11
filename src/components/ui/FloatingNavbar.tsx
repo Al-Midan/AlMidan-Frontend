@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import {
   motion,
   AnimatePresence,
@@ -11,6 +10,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation"; 
+
 export const FloatingNav = ({
   navItems,
   className,
@@ -24,31 +24,22 @@ export const FloatingNav = ({
 }) => {
   const { scrollYProgress } = useScroll();
   const pathname = usePathname();
-  // set true for the initial state so that nav bar is visible in the hero section
   const [visible, setVisible] = useState(true);
   const router = useRouter();
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
-    // Check if current is not undefined and is a number
     if (typeof current === "number") {
       let direction = current! - scrollYProgress.getPrevious()!;
-
       if (scrollYProgress.get() < 0.05) {
-        // also set true for the initial state
         setVisible(true);
       } else {
-        if (direction < 0) {
-          setVisible(true);
-        } else {
-          setVisible(false);
-        }
+        setVisible(direction < 0);
       }
     }
   });
+
   function clearAllCookies() {
     const cookies = document.cookie.split(";");
-    console.log("cookies",cookies);
-    
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i];
       const eqPos = cookie.indexOf("=");
@@ -64,6 +55,7 @@ export const FloatingNav = ({
     clearAllCookies();   
     router.push("/login");
   };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -89,41 +81,42 @@ export const FloatingNav = ({
           border: "1px solid rgba(255, 255, 255, 0.125)",
         }}
       >
-               {pathname === "/" && ( <h1 className="text-white text-3xl font-bold">Al-Midan</h1>    )}
-
-               {navItems.map((navItem: any, idx: number) => (
-          navItem.name === "LogOut" ? (
-            <button
-              key={`link=${idx}`}
-              onClick={handleLogout}
-              className={cn(
-                "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
-              )}
-            >
-              <span className="block sm:hidden">{navItem.icon}</span>
-              <span className="text-sm !cursor-pointer">{navItem.name}</span>
-            </button>
-          ) : (
-            <Link
-              key={`link=${idx}`}
-              href={navItem.link || "#"}
-              className={cn(
-                "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
-              )}
-            >
-              <span className="block sm:hidden">{navItem.icon}</span>
-              <span className="text-sm !cursor-pointer">{navItem.name}</span>
+        {pathname === "/" ? (
+          <>
+            <h1 className="text-white text-3xl font-bold">Al-Midan</h1>
+            <Link href="/login" className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">
+              <span>Login</span>
+              <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-blue-500 to-transparent h-px" />
             </Link>
-          )
-        ))}
-        {pathname === "/" && (
-        <Link href={"/login"} className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">
-          <span>Login</span>
-          <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-blue-500 to-transparent  h-px" />
-        </Link>
-           )}
+          </>
+        ) : (
+          navItems.map((navItem: any, idx: number) => (
+            navItem.name === "LogOut" ? (
+              <button
+                key={`link=${idx}`}
+                onClick={handleLogout}
+                className={cn(
+                  "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
+                )}
+              >
+                <span className="block sm:hidden">{navItem.icon}</span>
+                <span className="text-sm !cursor-pointer">{navItem.name}</span>
+              </button>
+            ) : (
+              <Link
+                key={`link=${idx}`}
+                href={navItem.link || "#"}
+                className={cn(
+                  "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
+                )}
+              >
+                <span className="block sm:hidden">{navItem.icon}</span>
+                <span className="text-sm !cursor-pointer">{navItem.name}</span>
+              </Link>
+            )
+          ))
+        )}
       </motion.div>
-      
     </AnimatePresence>
   );
 };

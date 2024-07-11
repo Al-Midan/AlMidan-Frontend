@@ -27,10 +27,11 @@ export default function NavbarWrapper() {
   }, []);
 
   const adminNavItems = [
-    { name: "UserManagement", link: "/admin/User-Management" },
-    { name: "CourseManagement", link: "/admin/Course-Management" },
-    { name: "LogOut", link: "/login" },
-  ];
+    { name: "Users", link: "/admin/User-Management" },
+    { name: "Courses", link: "/admin/Course-Management" },
+    { name: "Logout", link: "/login" },
+];
+
 
   const defaultNavItems = [
     { name: "Courses", link: "/course" },
