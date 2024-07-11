@@ -4,7 +4,9 @@ import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 import { CREATESECTION } from "@/shared/helpers/endpoints";
 import { useSearchParams } from "next/navigation";
 import { Toaster, toast } from "sonner";
+import { useRouter } from "next/navigation";
 import axios from "axios";
+
 interface Lesson {
   title: string;
   description: string;
@@ -19,18 +21,16 @@ interface Section {
 }
 
 const AddCourse: React.FC = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
 
-  console.log("CourseId", courseId);
   const [sections, setSections] = useState<Section[]>([]);
   const [sectionTitle, setSectionTitle] = useState("");
   const [sectionDescription, setSectionDescription] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState<number | null>(
-    null
-  );
+  const [currentSectionIndex, setCurrentSectionIndex] = useState<number | null>(null);
 
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDescription, setLessonDescription] = useState("");
@@ -50,9 +50,7 @@ const AddCourse: React.FC = () => {
       setErrors((prevErrors) => ({
         ...prevErrors,
         sectionTitle: !sectionTitle ? "Section title is required." : "",
-        sectionDescription: !sectionDescription
-          ? "Section description is required."
-          : "",
+        sectionDescription: !sectionDescription ? "Section description is required." : "",
       }));
       return;
     }
@@ -101,9 +99,7 @@ const AddCourse: React.FC = () => {
       setErrors((prevErrors) => ({
         ...prevErrors,
         lessonTitle: !lessonTitle ? "Lesson title is required." : "",
-        lessonDescription: !lessonDescription
-          ? "Lesson description is required."
-          : "",
+        lessonDescription: !lessonDescription ? "Lesson description is required." : "",
         lessonVideo: !lessonVideo ? "Lesson video is required." : "",
       }));
       return;
@@ -137,9 +133,9 @@ const AddCourse: React.FC = () => {
   const handleSaveLesson = () => {
     if (currentSectionIndex !== null && currentLesson !== null) {
       const updatedSections = [...sections];
-      const lessonIndex = updatedSections[
-        currentSectionIndex
-      ].lessons.findIndex((lesson) => lesson === currentLesson);
+      const lessonIndex = updatedSections[currentSectionIndex].lessons.findIndex(
+        (lesson) => lesson === currentLesson
+      );
       updatedSections[currentSectionIndex].lessons[lessonIndex] = {
         title: lessonTitle,
         description: lessonDescription,
@@ -157,9 +153,9 @@ const AddCourse: React.FC = () => {
 
   const handleDeleteLesson = (sectionIndex: number, lessonIndex: number) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].lessons = updatedSections[
-      sectionIndex
-    ].lessons.filter((_, i) => i !== lessonIndex);
+    updatedSections[sectionIndex].lessons = updatedSections[sectionIndex].lessons.filter(
+      (_, i) => i !== lessonIndex
+    );
     setSections(updatedSections);
   };
 
@@ -181,41 +177,40 @@ const AddCourse: React.FC = () => {
       style: { background: "black", color: "white" },
       position: "top-center",
     });
+    console.log("sections",sections);
+    
     try {
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  
       const payload = {
         userData,
         sections,
         courseId,
       };
-
-      console.log("userData", userData);
-      console.log("sections", sections);
-      const response = await axiosInstanceMultipart.post(
-        CREATESECTION,
-        payload
-      );
+  console.log("payload",payload);
+  
+      const response = await axiosInstanceMultipart.post(CREATESECTION, payload);
       console.log("response", response);
-      const Message = response.data.message;
-      if (response.status === 200) {
-        toast.dismiss(loadingToastId);
-        toast.success(Message, {
-          style: { background: "black", color: "white" },
-          position: "top-center",
-        });
-      }
-    } catch (error) {
+  
+      toast.dismiss(loadingToastId);
+      toast.success("Course sections added successfully", {
+        style: { background: "black", color: "white" },
+        position: "top-center",
+      });
+      setTimeout(() => {
+        router.push("/course");
+      }, 1000);
+    }catch (error) {
+      toast.dismiss(loadingToastId);
       if (axios.isAxiosError(error) && error.response) {
-        toast.dismiss(loadingToastId);
         const errorMessage = error.response.data.message;
         toast.error(errorMessage, {
           style: { background: "black", color: "white" },
           position: "top-center",
         });
       } else {
-        toast.dismiss(loadingToastId);
         console.error("Error creating course:", error);
-        toast.error("Error creating course:", {
+        toast.error("Error creating course", {
           style: { background: "black", color: "white" },
         });
       }
@@ -223,15 +218,11 @@ const AddCourse: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 bg-neutral-600	rounded-lg mt-48 mb-16">
+    <div className="container mx-auto p-6 bg-neutral-600 rounded-lg mt-48 mb-16">
+      <h1 className="text-2xl font-bold mb-4 text-white">Add Course Sections</h1>
       <Toaster />
-      <h1 className="text-2xl font-bold mb-4 text-white">
-        Add Course Sections{" "}
-      </h1>
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2 text-white">
-          Section Title{" "}
-        </label>
+        <label className="block text-sm font-medium mb-2 text-white">Section Title</label>
         <input
           type="text"
           value={sectionTitle}
@@ -245,9 +236,7 @@ const AddCourse: React.FC = () => {
         )}
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2 text-white">
-          Section Description
-        </label>
+        <label className="block text-sm font-medium mb-2 text-white">Section Description</label>
         <textarea
           value={sectionDescription}
           onChange={(e) => setSectionDescription(e.target.value)}
@@ -256,9 +245,7 @@ const AddCourse: React.FC = () => {
           }`}
         />
         {errors.sectionDescription && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.sectionDescription}
-          </p>
+          <p className="text-red-500 text-sm mt-1">{errors.sectionDescription}</p>
         )}
       </div>
       <button
@@ -269,16 +256,13 @@ const AddCourse: React.FC = () => {
       </button>
 
       {sections.map((section, sectionIndex) => (
-        <div
-          key={sectionIndex}
-          className="border border-gray-300 p-4 rounded my-4 "
-        >
+        <div key={sectionIndex} className="border border-gray-300 p-4 rounded my-4">
           <h2 className="text-xl font-semibold">{section.title}</h2>
           <p>{section.description}</p>
           <div className="flex space-x-2 mt-2">
             <button
               onClick={() => handleEditSection(sectionIndex)}
-              className=" bg-fuchsia-500	 text-white px-4 py-2 rounded hover:bg-yellow-600"
+              className="bg-fuchsia-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
             >
               Edit
             </button>
@@ -300,26 +284,12 @@ const AddCourse: React.FC = () => {
             Add Lesson
           </button>
           {section.lessons.map((lesson, lessonIndex) => (
-            <div
-              key={lessonIndex}
-              className="border border-gray-300 p-3 rounded my-2"
-            >
+            <div key={lessonIndex} className="border border-gray-300 p-3 rounded my-2">
               <h4 className="text-md font-semibold">{lesson.title}</h4>
-              <p>{lesson.description}</p>
-              <video
-                src={
-                  typeof lesson.video === "string"
-                    ? lesson.video
-                    : URL.createObjectURL(lesson.video)
-                }
-                controls
-                className=" mt-2 rounded h-60 "
-              />{" "}
-              <p>{lesson.isFree ? "Free" : "Paid"}</p>
               <div className="flex space-x-2 mt-2">
                 <button
                   onClick={() => handleEditLesson(sectionIndex, lessonIndex)}
-                  className="bg-fuchsia-600	 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                  className="bg-fuchsia-600 text-white px-4 py-2 rounded hover:bg-yellow-600"
                 >
                   Edit
                 </button>
@@ -337,19 +307,17 @@ const AddCourse: React.FC = () => {
 
       <button
         onClick={handleSubmitCourse}
-        className="bg-cyan-600	 text-white mx-5 px-4 py-2 rounded hover:bg-blue-600"
+        className="bg-cyan-600 text-white mx-5 px-4 py-2 rounded hover:bg-blue-600"
       >
         Submit Course
       </button>
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className=" p-6 rounded shadow-lg max-w-lg w-full">
+          <div className="bg-black-100 p-6 rounded shadow-lg max-w-lg w-full">
             <h2 className="text-xl font-bold mb-4">Add/Edit Lesson</h2>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Lesson Title
-              </label>
+              <label className="block text-sm font-medium mb-2">Lesson Title</label>
               <input
                 type="text"
                 value={lessonTitle}
@@ -359,34 +327,24 @@ const AddCourse: React.FC = () => {
                 }`}
               />
               {errors.lessonTitle && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.lessonTitle}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.lessonTitle}</p>
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Lesson Description
-              </label>
+              <label className="block text-sm font-medium mb-2">Lesson Description</label>
               <textarea
                 value={lessonDescription}
                 onChange={(e) => setLessonDescription(e.target.value)}
                 className={`w-full p-2 border rounded ${
-                  errors.lessonDescription
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  errors.lessonDescription ? "border-red-500" : "border-gray-300"
                 }`}
               />
               {errors.lessonDescription && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.lessonDescription}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.lessonDescription}</p>
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Lesson Video
-              </label>
+              <label className="block text-sm font-medium mb-2">Lesson Video</label>
               <input
                 type="file"
                 accept="video/*"
@@ -410,9 +368,7 @@ const AddCourse: React.FC = () => {
                 />
               )}
               {errors.lessonVideo && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.lessonVideo}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.lessonVideo}</p>
               )}
             </div>
             <div className="mb-4">

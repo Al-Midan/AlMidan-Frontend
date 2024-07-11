@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   motion,
   AnimatePresence,
@@ -15,7 +17,7 @@ export const FloatingNav = ({
 }: {
   navItems: {
     name: string;
-    link: string;
+    link?: string;
     icon?: JSX.Element;
   }[];
   className?: string;
@@ -24,6 +26,7 @@ export const FloatingNav = ({
   const pathname = usePathname();
   // set true for the initial state so that nav bar is visible in the hero section
   const [visible, setVisible] = useState(true);
+  const router = useRouter();
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     // Check if current is not undefined and is a number
@@ -42,7 +45,25 @@ export const FloatingNav = ({
       }
     }
   });
-
+  function clearAllCookies() {
+    const cookies = document.cookie.split(";");
+    console.log("cookies",cookies);
+    
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=localhost";
+    }
+  }
+  
+  const handleLogout = () => {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    clearAllCookies();   
+    router.push("/login");
+  };
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -70,18 +91,30 @@ export const FloatingNav = ({
       >
                {pathname === "/" && ( <h1 className="text-white text-3xl font-bold">Al-Midan</h1>    )}
 
-        {navItems.map((navItem: any, idx: number) => (
-          <Link
-            key={`link=${idx}`}
-            href={navItem.link}
-            className={cn(
-              "relative dark:text-neutral-50 items-center  flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
-            )}
-          >
-            <span className="block sm:hidden">{navItem.icon}</span>
-
-            <span className=" text-sm !cursor-pointer">{navItem.name}</span>
-          </Link>
+               {navItems.map((navItem: any, idx: number) => (
+          navItem.name === "LogOut" ? (
+            <button
+              key={`link=${idx}`}
+              onClick={handleLogout}
+              className={cn(
+                "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
+              )}
+            >
+              <span className="block sm:hidden">{navItem.icon}</span>
+              <span className="text-sm !cursor-pointer">{navItem.name}</span>
+            </button>
+          ) : (
+            <Link
+              key={`link=${idx}`}
+              href={navItem.link || "#"}
+              className={cn(
+                "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
+              )}
+            >
+              <span className="block sm:hidden">{navItem.icon}</span>
+              <span className="text-sm !cursor-pointer">{navItem.name}</span>
+            </Link>
+          )
         ))}
         {pathname === "/" && (
         <Link href={"/login"} className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">

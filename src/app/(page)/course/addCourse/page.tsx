@@ -15,6 +15,7 @@ const NewCoursePage: React.FC = () => {
   const [courseCategory, setCourseCategory] = useState("");
   const [coursePrice, setCoursePrice] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState({
     courseName: "",
     courseDescription: "",
@@ -26,6 +27,7 @@ const NewCoursePage: React.FC = () => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result as string);
@@ -84,7 +86,6 @@ const NewCoursePage: React.FC = () => {
         position: "top-center",
       });
       try {
-        // Retrieve userData from localStorage
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
 
         const formData = new FormData();
@@ -93,12 +94,8 @@ const NewCoursePage: React.FC = () => {
         formData.append("courseCategory", courseCategory);
         formData.append("coursePrice", coursePrice.toString());
 
-        // Check if previewUrl is not null before appending
-        if (previewUrl !== null) {
-          const file = new File([previewUrl], "image.jpg", {
-            type: "image/jpeg",
-          });
-          formData.append("courseImage", file);
+        if (selectedFile) {
+          formData.append("courseImage", selectedFile);
         }
 
         formData.append("userData", JSON.stringify(userData));
@@ -128,7 +125,7 @@ const NewCoursePage: React.FC = () => {
             console.log("courseId", courseId);
 
             router.push(`/course/addCourse/addSection/?courseId=${courseId}`);
-          }, 2000);
+          }, 1000);
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {

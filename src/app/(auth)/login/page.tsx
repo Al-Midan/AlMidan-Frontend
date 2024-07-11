@@ -96,7 +96,7 @@ const Login = () => {
         style: { background: "black", color: "white" },
         position: "top-center",
       });
-      if (userData.roles[0] == "admin") {
+      if (userData.roles == "admin") {
         router.replace("/admin");
       } else {
         router.replace("/home");

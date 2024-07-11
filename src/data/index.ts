@@ -1,8 +1,7 @@
 // Navbar Data
 export const navItems = [
-  { name: "Courses", link: "#courses" },
-  { name: "Services", link: "#services" },
-  { name: "Feedback", link: "#feedback" },
+  { name: "Home", link: "/" },
+  { name: "Login", link: "/login" },
 ];
 // Course Data
 export const Course = [

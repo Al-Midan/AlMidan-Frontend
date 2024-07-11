@@ -91,7 +91,7 @@ const Page = () => {
     <div className="font-sans text-white bg-black-100 min-h-screen">
       <div className=" justify-between items-center p-4 bg-black-100">
         <h1 className="text-2xl font-bold">AL-Midan</h1>
-        <h2 className="text-3xl font-semibold text-center">User Management</h2>
+        <h2 className="text-3xl font-semibold text-center mt-20">User Management</h2>
       </div>
       <Toaster />
       <div className="overflow-x-auto p-4 flex justify-center">
