@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axiosInstance from "@/shared/helpers/axiosInstance";
-import { BUYCOURSE, CHECKUSERCOURSEACCESS, GETCOURSEDETAILS } from "@/shared/helpers/endpoints";
+import { BUYCOURSE, CHECKUSERCOURSEACCESS, GETCOURSEDETAILS, MARKLESSONCOMPLETED } from "@/shared/helpers/endpoints";
 import Image from "next/image";
 import { Toaster, toast } from "sonner";
 import useRazorpay from "@/shared/hooks/useRazorpay";
 
 interface ILesson {
+  _id: string;
   title: string;
   description: string;
   isFree: boolean;
@@ -43,6 +44,7 @@ const CourseDetailsPage = () => {
   const [selectedLesson, setSelectedLesson] = useState<ILesson | null>(null);
   const [userData, setUserData] = useState(null);
   const [userStatus, setUserStatus] = useState<"Not Enrolled" | "Enrolled" | "Owner" | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
@@ -54,7 +56,13 @@ const CourseDetailsPage = () => {
           userData: parsedUserData
         });
         if (userStatusResponse.status === 200) {
-          setUserStatus(userStatusResponse.data.response);
+          console.log("userStatusResponse", userStatusResponse);
+          if (userStatusResponse.data.response.Enrolled) {
+            setUserStatus(userStatusResponse.data.response.Enrolled);
+            setCompletedLessons(userStatusResponse.data.response._doc.completedlessons || []);
+          } else {
+            setUserStatus(userStatusResponse.data.response);
+          }
         }
       } catch (error) {
         console.error("Error checking user course access:", error);
@@ -155,6 +163,38 @@ const CourseDetailsPage = () => {
       console.error("Error in handleEnrollClick:", error);
     } finally {
       setIsEnrolling(false);
+    }
+  };
+
+  const handleMarkAsCompleted = async (lessonId: string) => {
+    if (userStatus !== "Enrolled") {
+      toast.error("You must be enrolled to mark lessons as completed", {
+        style: { background: "#1E293B", color: "white" },
+        position: "top-center",
+      });
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post(MARKLESSONCOMPLETED, {
+        courseId,
+        lessonId,
+        userData,
+      });
+
+      if (response.status === 200) {
+        setCompletedLessons((prev) => [...prev, lessonId]);
+        toast.success("Lesson marked as completed!", {
+          style: { background: "#1E293B", color: "white" },
+          position: "top-center",
+        });
+      }
+    } catch (error) {
+      console.error("Error marking lesson as completed:", error);
+      toast.error("Failed to mark lesson as completed", {
+        style: { background: "#1E293B", color: "white" },
+        position: "top-center",
+      });
     }
   };
 
@@ -280,27 +320,40 @@ const CourseDetailsPage = () => {
                           {section.description}
                         </p>
                         <ul className="space-y-2">
-                          {section.lessons.map((lesson, index) => (
+                          {section.lessons.map((lesson) => (
                             <li
-                              key={index}
+                              key={lesson._id}
                               className={`cursor-pointer hover:bg-slate-700 p-2 rounded-md transition ${
                                 userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree ? "" : "opacity-70"
                               }`}
-                              onClick={() => handleLessonClick(lesson)}
                             >
-                              <div className="flex items-center">
-                                <span
-                                  className={`mr-2 text-base ${
-                                    userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree
-                                      ? "text-green-400"
-                                      : "text-yellow-400"
-                                  }`}
-                                >
-                                  {userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree ? "🔓" : "🔒"}
-                                </span>
-                                <span className="text-sm font-medium text-teal-300">
-                                  {lesson.title}
-                                </span>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center" onClick={() => handleLessonClick(lesson)}>
+                                  <span
+                                    className={`mr-2 text-base ${
+                                      userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree
+                                        ? "text-green-400"
+                                        : "text-yellow-400"
+                                    }`}
+                                  >
+                                    {userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree ? "🔓" : "🔒"}
+                                  </span>
+                                  <span className="text-sm font-medium text-teal-300">
+                                    {lesson.title}
+                                  </span>
+                                </div>
+                                {userStatus === "Enrolled" && (
+                                  <button
+                                    onClick={() => handleMarkAsCompleted(lesson._id)}
+                                    className={`text-xs px-2 py-1 rounded ${
+                                      completedLessons.includes(lesson._id)
+                                        ? "bg-green-600 text-white"
+                                        : "bg-slate-600 text-slate-200 hover:bg-slate-500"
+                                    }`}
+                                  >
+                                    {completedLessons.includes(lesson._id) ? "Completed" : "Mark as Completed"}
+                                  </button>
+                                )}
                               </div>
                               <p className="text-xs text-slate-400 mt-1 ml-6">
                                 {lesson.description}

@@ -38,6 +38,7 @@ export default function NavbarWrapper() {
     { name: "Courses", link: "/course" },
     { name: "Services", link: "/services" },
     { name: "Profile", link: "/profile" },
+    { name: "Complaints", link: "/complaints" },
     { name: "LogOut", link: "/login" },
   ];
 
