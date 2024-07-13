@@ -2,7 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import { COURSECOMPLAINTS } from "@/shared/helpers/endpoints";
+import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 
 interface TabButtonProps {
   active: boolean;
@@ -30,7 +31,8 @@ const Complaints: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "services" | "courses" | "general"
   >("services");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,14 +56,16 @@ const Complaints: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedImage(file);
       const reader = new FileReader();
-      reader.onload = (e) => setSelectedImage(e.target?.result as string);
+      reader.onload = (e) => setPreviewUrl(e.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
 
   const removeImage = () => {
     setSelectedImage(null);
+    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -77,6 +81,7 @@ const Complaints: React.FC = () => {
       description: "",
     });
     setSelectedImage(null);
+    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -100,22 +105,25 @@ const Complaints: React.FC = () => {
       let response;
       switch (activeTab) {
         case "services":
-          response = await axios.post(
+          response = await axiosInstanceMultipart.post(
             "/api/complaints/service",
             submissionData
           );
           break;
         case "courses":
-          response = await axios.post("/api/complaints/course", submissionData);
+          response = await axiosInstanceMultipart.post(
+            COURSECOMPLAINTS,
+            submissionData
+          );
           break;
         case "general":
-          response = await axios.post(
+          response = await axiosInstanceMultipart.post(
             "/api/complaints/general",
             submissionData
           );
           break;
       }
-      setSubmitMessage("Complaint submitted successfully!");
+      setSubmitMessage("Complaint/Feedback submitted successfully!");
       resetForm();
     } catch (error) {
       setSubmitMessage("Failed to submit complaint. Please try again.");
@@ -126,17 +134,17 @@ const Complaints: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8 flex flex-col items-center">
-   <header className="w-full text-center mb-8 mt-20">
-  <h1 className="text-5xl sm:text-6xl font-bold text-blue-400 group">
-    Al-Midan
-    <div
-      className="
-        h-1 bg-blue-400 mx-auto mt-2 rounded-full
-        w-0 group-hover:w-24 transition-all duration-300 ease-in-out
-      "
-    ></div>
-  </h1>
-</header>
+      <header className="w-full text-center mb-8 mt-20">
+        <h1 className="text-5xl sm:text-6xl font-bold text-blue-400 group">
+          Al-Midan
+          <div
+            className="
+              h-1 bg-blue-400 mx-auto mt-2 rounded-full
+              w-0 group-hover:w-24 transition-all duration-300 ease-in-out
+            "
+          ></div>
+        </h1>
+      </header>
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -213,11 +221,11 @@ const Complaints: React.FC = () => {
               >
                 Select Image
               </button>
-              {selectedImage && (
+              {previewUrl && (
                 <div className="mt-4">
                   <p className="mb-2 text-sm sm:text-base">Preview:</p>
                   <img
-                    src={selectedImage}
+                    src={previewUrl}
                     alt="Preview"
                     className="max-w-full h-auto rounded"
                   />
@@ -241,10 +249,11 @@ const Complaints: React.FC = () => {
           </form>
           {submitMessage && (
             <p
-              className={`mt-4 text-center ${submitMessage.includes("successfully")
+              className={`mt-4 text-center ${
+                submitMessage.includes("successfully")
                   ? "text-green-400"
                   : "text-red-400"
-                }`}
+              }`}
             >
               {submitMessage}
             </p>
@@ -273,10 +282,11 @@ const Complaints: React.FC = () => {
 const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
   <button
     type="button"
-    className={`px-4 sm:px-6 py-2 rounded-full transition-colors duration-300 text-sm sm:text-base ${active
+    className={`px-4 sm:px-6 py-2 rounded-full transition-colors duration-300 text-sm sm:text-base ${
+      active
         ? "bg-blue-600 text-white"
         : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-      }`}
+    }`}
     onClick={onClick}
   >
     {children}
