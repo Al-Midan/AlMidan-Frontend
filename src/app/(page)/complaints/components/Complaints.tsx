@@ -127,7 +127,7 @@ const Complaints: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white p-4 sm:p-8 flex flex-col items-center">
       <header className="w-full text-center mb-8 mt-20">
         <h1 className="text-5xl sm:text-6xl font-bold text-blue-400 group">
           Al-Midan
