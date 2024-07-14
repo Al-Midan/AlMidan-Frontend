@@ -1,7 +1,11 @@
-"use client"
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '@/shared/helpers/axiosInstance';
-import { GETCOURSECOMPLAINTS, GETSERVICECOMPLAINTS, GETGENERALCOMPLAINTS } from '@/shared/helpers/endpoints';
+"use client";
+import React, { useState, useEffect } from "react";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import {
+  GETCOURSECOMPLAINTS,
+  GETSERVICECOMPLAINTS,
+  GETGENERALCOMPLAINTS,
+} from "@/shared/helpers/endpoints";
 
 interface Complaint {
   _id: string;
@@ -9,17 +13,22 @@ interface Complaint {
   instructorName?: string;
   description: string;
   complaintPhoto?: string;
-  serviceType?: string;
-  category?: string;
+  serviceName?: string;
+  ServicerName?: string;
+  subject?: string;
 }
 
 const ComplaintCenter: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'course' | 'service' | 'general'>('course');
+  const [activeTab, setActiveTab] = useState<"course" | "service" | "general">(
+    "course"
+  );
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedComplaints, setExpandedComplaints] = useState<Set<string>>(new Set());
+  const [expandedComplaints, setExpandedComplaints] = useState<Set<string>>(
+    new Set()
+  );
   const complaintsPerPage = 9;
 
   useEffect(() => {
@@ -33,13 +42,13 @@ const ComplaintCenter: React.FC = () => {
       const endpoint = {
         course: GETCOURSECOMPLAINTS,
         service: GETSERVICECOMPLAINTS,
-        general: GETGENERALCOMPLAINTS
+        general: GETGENERALCOMPLAINTS,
       }[activeTab];
       const response = await axiosInstance.get(endpoint);
       setComplaints(response.data.response);
     } catch (error) {
-      console.error('Error fetching complaints:', error);
-      setError('Failed to load complaints. Please try again later.');
+      console.error("Error fetching complaints:", error);
+      setError("Failed to load complaints. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -47,12 +56,15 @@ const ComplaintCenter: React.FC = () => {
 
   const indexOfLastComplaint = currentPage * complaintsPerPage;
   const indexOfFirstComplaint = indexOfLastComplaint - complaintsPerPage;
-  const currentComplaints = complaints.slice(indexOfFirstComplaint, indexOfLastComplaint);
+  const currentComplaints = complaints.slice(
+    indexOfFirstComplaint,
+    indexOfLastComplaint
+  );
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   const toggleExpand = (id: string) => {
-    setExpandedComplaints(prev => {
+    setExpandedComplaints((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -71,15 +83,17 @@ const ComplaintCenter: React.FC = () => {
         </h1>
 
         <div className="flex justify-center mb-6 space-x-2 sm:space-x-4">
-          {['course', 'service', 'general'].map((tab) => (
+          {["course", "service", "general"].map((tab) => (
             <button
               key={tab}
               className={`px-3 py-2 sm:px-4 sm:py-2 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 ${
                 activeTab === tab
-                  ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  ? "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
               }`}
-              onClick={() => setActiveTab(tab as 'course' | 'service' | 'general')}
+              onClick={() =>
+                setActiveTab(tab as "course" | "service" | "general")
+              }
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
@@ -94,9 +108,7 @@ const ComplaintCenter: React.FC = () => {
         )}
 
         {error && (
-          <div className="text-center text-xl text-red-500 mb-6">
-            {error}
-          </div>
+          <div className="text-center text-xl text-red-500 mb-6">{error}</div>
         )}
 
         {!loading && !error && complaints.length === 0 && (
@@ -119,15 +131,25 @@ const ComplaintCenter: React.FC = () => {
                 />
               )}
               <h2 className="text-lg font-semibold mb-2 line-clamp-1">
-                {complaint.courseName || complaint.serviceType || 'General Complaint'}
+                {complaint.courseName ||
+                  complaint.serviceName ||
+                  complaint.subject}
               </h2>
               {complaint.instructorName && (
-                <p className="text-sm text-gray-400 mb-1">Instructor: {complaint.instructorName}</p>
+                <p className="text-sm text-gray-400 mb-1">
+                  Instructor: {complaint.instructorName}
+                </p>
               )}
-              {complaint.category && (
-                <p className="text-sm text-gray-400 mb-1">Category: {complaint.category}</p>
+              {complaint.ServicerName && (
+                <p className="text-sm text-gray-400 mb-1">
+                  Servicer: {complaint.ServicerName}
+                </p>
               )}
-              <p className={`text-sm text-gray-300 ${expandedComplaints.has(complaint._id) ? '' : 'line-clamp-3'}`}>
+              <p
+                className={`text-sm text-gray-300 ${
+                  expandedComplaints.has(complaint._id) ? "" : "line-clamp-3"
+                }`}
+              >
                 {complaint.description}
               </p>
               {complaint.description.length > 150 && (
@@ -135,7 +157,9 @@ const ComplaintCenter: React.FC = () => {
                   onClick={() => toggleExpand(complaint._id)}
                   className="text-sm text-blue-400 hover:text-blue-300 mt-2 focus:outline-none"
                 >
-                  {expandedComplaints.has(complaint._id) ? 'View Less' : 'View More'}
+                  {expandedComplaints.has(complaint._id)
+                    ? "View Less"
+                    : "View More"}
                 </button>
               )}
             </div>
@@ -144,14 +168,16 @@ const ComplaintCenter: React.FC = () => {
 
         {complaints.length > complaintsPerPage && (
           <div className="flex justify-center mt-6">
-            {Array.from({ length: Math.ceil(complaints.length / complaintsPerPage) }).map((_, index) => (
+            {Array.from({
+              length: Math.ceil(complaints.length / complaintsPerPage),
+            }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => paginate(index + 1)}
                 className={`mx-1 px-3 py-1 rounded-full text-sm ${
                   currentPage === index + 1
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    ? "bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                 }`}
               >
                 {index + 1}
