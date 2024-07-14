@@ -116,7 +116,7 @@ const JobPostingForm: React.FC = () => {
   
     try {
       const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
+        Object.entries(formData).forEach(([key, value]) => {
         if (key === 'skillsRequired') {
           formDataToSend.append(key, JSON.stringify(value));
         } else if (key === 'image' && value instanceof File) {
@@ -124,7 +124,16 @@ const JobPostingForm: React.FC = () => {
         } else {
           formDataToSend.append(key, String(value));
         }
-      });  
+      });
+  
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+        Object.entries(parsedUserData).forEach(([key, value]) => {
+          formDataToSend.append(key, String(value));
+        });
+      }
+  
       const response = await axiosInstanceMultipart.post(CREATEJOB, formDataToSend);
   
       console.log('Job posted successfully:', response.data);
@@ -138,6 +147,7 @@ const JobPostingForm: React.FC = () => {
       setSuccessMessage('Error posting job. Please try again.');
     }
   };
+  
 
   const renderStep = () => {
     switch (currentStep) {

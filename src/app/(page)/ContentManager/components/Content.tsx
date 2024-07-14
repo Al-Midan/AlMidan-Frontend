@@ -7,7 +7,7 @@ import { FaGraduationCap, FaBriefcase, FaPencilAlt } from 'react-icons/fa';
 const Content = () => {
   const items = [
     { title: 'Course Creation', href: '/course/addCourse', icon: FaGraduationCap },
-    { title: 'Job Creation', href: '/createJob', icon: FaBriefcase },
+    { title: 'Job Creation', href: '/service/createJob', icon: FaBriefcase },
     { title: 'Skilled Post Creation', href: '/create-skilled-post', icon: FaPencilAlt },
   ];
 
