@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { COURSECOMPLAINTS } from "@/shared/helpers/endpoints";
+import { COURSECOMPLAINTS, GENERALCOMPLAINTS, SERVICECOMPLAINTS } from "@/shared/helpers/endpoints";
 import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 
 interface TabButtonProps {
@@ -13,7 +13,7 @@ interface TabButtonProps {
 
 interface FormData {
   serviceName: string;
-  orderNumber: string;
+  ServicerName: string;
   courseName: string;
   instructorName: string;
   subject: string;
@@ -39,7 +39,7 @@ const Complaints: React.FC = () => {
 
   const [formData, setFormData] = useState<FormData>({
     serviceName: "",
-    orderNumber: "",
+    ServicerName: "",
     courseName: "",
     instructorName: "",
     subject: "",
@@ -74,7 +74,7 @@ const Complaints: React.FC = () => {
   const resetForm = () => {
     setFormData({
       serviceName: "",
-      orderNumber: "",
+      ServicerName: "",
       courseName: "",
       instructorName: "",
       subject: "",
@@ -105,10 +105,7 @@ const Complaints: React.FC = () => {
       let response;
       switch (activeTab) {
         case "services":
-          response = await axiosInstanceMultipart.post(
-            "/api/complaints/service",
-            submissionData
-          );
+          response = await axiosInstanceMultipart.post(SERVICECOMPLAINTS,submissionData);
           break;
         case "courses":
           response = await axiosInstanceMultipart.post(
@@ -117,10 +114,7 @@ const Complaints: React.FC = () => {
           );
           break;
         case "general":
-          response = await axiosInstanceMultipart.post(
-            "/api/complaints/general",
-            submissionData
-          );
+          response = await axiosInstanceMultipart.post(GENERALCOMPLAINTS,submissionData);
           break;
       }
       setSubmitMessage("Complaint/Feedback submitted successfully!");
@@ -304,11 +298,11 @@ const ServicesForm: React.FC<FormProps> = ({ formData, handleInputChange }) => (
       className="w-full p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
     />
     <input
-      name="orderNumber"
+      name="ServicerName"
       type="text"
-      value={formData.orderNumber}
+      value={formData.ServicerName}
       onChange={handleInputChange}
-      placeholder="Order Number (if applicable)"
+      placeholder="ServicerName (if applicable)"
       className="w-full p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
     />
     <textarea
