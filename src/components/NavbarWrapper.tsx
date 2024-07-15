@@ -30,7 +30,7 @@ export default function NavbarWrapper() {
     { name: "Users", link: "/admin/User-Management" },
     { name: "Courses", link: "/admin/Course-Management" },
     { name: "Complaints", link: "/admin/Complaint-Management" },
-    { name: "Logout", link: "/login" },
+    { name: "LogOut", link: "/login" },
 ];
 
 

@@ -3,6 +3,7 @@ export const LOGIN = "/user-service/login";
 export const OTP = "/user-service/otp-verification";
 export const REFRESHTOKEN = "/user-service/refresh-token";
 export const USERVALUES = "/user-service/userValues";
+export const LOGOUT = "/user-service/logOut";
 export const CREATECOURSE = "/course-service/createCourse";
 export const CREATESECTION = "/course-service/createSection";
 export const GETCOURSE = "/course-service/getCourse";

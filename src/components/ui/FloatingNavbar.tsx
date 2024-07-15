@@ -9,7 +9,9 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation"; 
+import { usePathname } from "next/navigation";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import { LOGOUT } from "@/shared/helpers/endpoints";
 
 export const FloatingNav = ({
   navItems,
@@ -38,24 +40,19 @@ export const FloatingNav = ({
     }
   });
 
-  function clearAllCookies() {
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i];
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=localhost";
+  const handleLogout = async () => {
+    try {
+      localStorage.clear();
+      const response = await axiosInstance.get(LOGOUT);
+      if (response.status === 200) {
+        router.push("/login");
+      } else {
+        console.error('Logout failed:', response.data);
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  }
-  
-  const handleLogout = () => {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    clearAllCookies();   
-    router.push("/login");
   };
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -84,13 +81,16 @@ export const FloatingNav = ({
         {pathname === "/" ? (
           <>
             <h1 className="text-white text-3xl font-bold">Al-Midan</h1>
-            <Link href="/login" className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">
+            <Link
+              href="/login"
+              className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full"
+            >
               <span>Login</span>
               <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-blue-500 to-transparent h-px" />
             </Link>
           </>
         ) : (
-          navItems.map((navItem: any, idx: number) => (
+          navItems.map((navItem: any, idx: number) =>
             navItem.name === "LogOut" ? (
               <button
                 key={`link=${idx}`}
@@ -114,7 +114,7 @@ export const FloatingNav = ({
                 <span className="text-sm !cursor-pointer">{navItem.name}</span>
               </Link>
             )
-          ))
+          )
         )}
       </motion.div>
     </AnimatePresence>
