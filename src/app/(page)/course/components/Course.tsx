@@ -39,11 +39,14 @@ const Course = () => {
         if (response.status === 200) {
           console.log("response", response);
           toast.dismiss(loadingToastId);
-          toast.success(Message, {
+        const success=  toast.success(Message, {
             style: { background: "black", color: "white" },
             position: "top-center",
           });
           setValues(response.data.allCourse);
+          setTimeout(()=>{
+            toast.dismiss(success);
+          },1000)
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
