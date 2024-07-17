@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { COURSECOMPLAINTS, GENERALCOMPLAINTS, SERVICECOMPLAINTS } from "@/shared/helpers/endpoints";
-import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
+import {
+  COURSECOMPLAINTS,
+  ENROLLEDCOURSES,
+  GENERALCOMPLAINTS,
+  SERVICECOMPLAINTS,
+} from "@/shared/helpers/endpoints";
+import axiosInstance, {
+  axiosInstanceMultipart,
+} from "@/shared/helpers/axiosInstance";
 
 interface TabButtonProps {
   active: boolean;
@@ -27,6 +34,13 @@ interface FormProps {
   ) => void;
 }
 
+interface CourseData {
+  _id: string;
+  courseName: string;
+  courseImage: string;
+  username: string;
+}
+
 const Complaints: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "services" | "courses" | "general"
@@ -36,6 +50,8 @@ const Complaints: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [enrolledCourses, setEnrolledCourses] = useState<CourseData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [formData, setFormData] = useState<FormData>({
     serviceName: "",
@@ -46,11 +62,48 @@ const Complaints: React.FC = () => {
     description: "",
   });
 
+  const FetchEnroll = async () => {
+    setIsLoading(true);
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      const userId = userData._id;
+      try {
+        const response = await axiosInstance.get(
+          `${ENROLLEDCOURSES}/${userId}`
+        );
+        const courseData = response.data.response.map((course: any) => ({
+          _id: course._id,
+          courseName: course.courseName,
+          courseImage: course.courseImage,
+          username: course.username,
+        }));
+        setEnrolledCourses(courseData);
+      } catch (error) {
+        console.error("Error fetching enrolled courses:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    FetchEnroll();
+  }, []);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCourseSelect = (course: CourseData) => {
+    setFormData((prev) => ({
+      ...prev,
+      courseName: course.courseName,
+      instructorName: course.username,
+    }));
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +158,10 @@ const Complaints: React.FC = () => {
       let response;
       switch (activeTab) {
         case "services":
-          response = await axiosInstanceMultipart.post(SERVICECOMPLAINTS,submissionData);
+          response = await axiosInstanceMultipart.post(
+            SERVICECOMPLAINTS,
+            submissionData
+          );
           break;
         case "courses":
           response = await axiosInstanceMultipart.post(
@@ -114,7 +170,10 @@ const Complaints: React.FC = () => {
           );
           break;
         case "general":
-          response = await axiosInstanceMultipart.post(GENERALCOMPLAINTS,submissionData);
+          response = await axiosInstanceMultipart.post(
+            GENERALCOMPLAINTS,
+            submissionData
+          );
           break;
       }
       setSubmitMessage("Complaint/Feedback submitted successfully!");
@@ -189,6 +248,9 @@ const Complaints: React.FC = () => {
               <CoursesForm
                 formData={formData}
                 handleInputChange={handleInputChange}
+                enrolledCourses={enrolledCourses}
+                handleCourseSelect={handleCourseSelect}
+                isLoading={isLoading}
               />
             )}
             {activeTab === "general" && (
@@ -315,24 +377,54 @@ const ServicesForm: React.FC<FormProps> = ({ formData, handleInputChange }) => (
   </>
 );
 
-const CoursesForm: React.FC<FormProps> = ({ formData, handleInputChange }) => (
+const CoursesForm: React.FC<
+  FormProps & {
+    enrolledCourses: CourseData[];
+    handleCourseSelect: (course: CourseData) => void;
+    isLoading: boolean;
+  }
+> = ({
+  formData,
+  handleInputChange,
+  enrolledCourses,
+  handleCourseSelect,
+  isLoading,
+}) => (
   <>
-    <input
-      name="courseName"
-      type="text"
-      value={formData.courseName}
-      onChange={handleInputChange}
-      placeholder="Course Name"
-      className="w-full p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-    />
-    <input
-      name="instructorName"
-      type="text"
-      value={formData.instructorName}
-      onChange={handleInputChange}
-      placeholder="Instructor Name"
-      className="w-full p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-    />
+    {isLoading ? (
+      <div className="flex justify-center items-center h-32">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    ) : (
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Select a course:
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {enrolledCourses.map((course) => (
+            <div
+              key={course._id}
+              className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                formData.courseName === course.courseName
+                  ? "bg-blue-600 shadow-lg transform scale-105"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              onClick={() => handleCourseSelect(course)}
+            >
+              <img
+                src={course.courseImage}
+                alt={course.courseName}
+                className="w-full h-32 object-cover rounded-md mb-2"
+              />
+              <h3 className="font-semibold text-sm">{course.courseName}</h3>
+              <p className="text-xs text-gray-400">
+                Instructor: {course.username}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
     <textarea
       name="description"
       value={formData.description}
