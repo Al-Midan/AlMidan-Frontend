@@ -157,7 +157,7 @@ const Services: React.FC = () => {
                     <span className="text-yellow-400 text-sm">Your Post</span>
                   ) : (
                     <button className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm">
-                      Message
+                      Send Proposal
                     </button>
                   ))}
               </div>
