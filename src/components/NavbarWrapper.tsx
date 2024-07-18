@@ -35,9 +35,11 @@ export default function NavbarWrapper() {
 
 
   const defaultNavItems = [
+    { name: "Home", link: "/home" },
     { name: "Contents", link: "/ContentManager" },
     { name: "Courses", link: "/course" },
-    { name: "Services", link: "/service" },
+    { name: "Job", link: "/service" },
+    { name: "Skill", link: "/service/skill" },
     { name: "Profile", link: "/profile" },
     { name: "Complaints", link: "/complaints" },
     { name: "LogOut", link: "/login" },
