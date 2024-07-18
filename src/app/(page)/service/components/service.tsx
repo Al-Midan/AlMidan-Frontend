@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axiosInstance from "@/shared/helpers/axiosInstance";
-import { GETALLJOB } from "@/shared/helpers/endpoints";
-
+import axiosInstance, {
+  axiosInstanceMultipart,
+} from "@/shared/helpers/axiosInstance";
+import { GETALLJOB, SENDPROPOSAL } from "@/shared/helpers/endpoints";
 interface Job {
   _id: string;
   title: string;
@@ -28,6 +29,10 @@ const Services: React.FC = () => {
   const [jobsPerPage] = useState(12);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [showProposalForm, setShowProposalForm] = useState(false);
+  const [proposalDescription, setProposalDescription] = useState("");
+  const [proposalCV, setProposalCV] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -52,6 +57,39 @@ const Services: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  const handleSendProposal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJob) return;
+
+    console.log("Description:", proposalDescription);
+    console.log("CV:", proposalCV);
+
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append("jobId", selectedJob._id);
+    formData.append("jobOwner", selectedJob.username);
+    formData.append("jobOwnerEmail", selectedJob.email);
+    formData.append("description", proposalDescription);
+    if (proposalCV) {
+      formData.append("cv", proposalCV);
+    }
+
+    try {
+      const response = await axiosInstanceMultipart.post(
+        SENDPROPOSAL,
+        formData
+      );
+      console.log("Proposal sent successfully:", response.data);
+      setShowProposalForm(false);
+      setProposalDescription("");
+      setProposalCV(null);
+    } catch (error) {
+      console.error("Error sending proposal:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -74,7 +112,9 @@ const Services: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
-                <h2 className="absolute bottom-2 left-2 text-xl font-semibold">{job.title}</h2>
+                <h2 className="absolute bottom-2 left-2 text-xl font-semibold">
+                  {job.title}
+                </h2>
               </div>
               <div className="p-4 flex-grow">
                 <div className="flex justify-between items-center mb-2">
@@ -94,7 +134,9 @@ const Services: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-gray-400 mb-2">
-                  <span>Posted: {new Date(job.postedDate).toLocaleDateString()}</span>
+                  <span>
+                    Posted: {new Date(job.postedDate).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
               <div className="p-4">
@@ -130,11 +172,15 @@ const Services: React.FC = () => {
       <AnimatePresence>
         {selectedJob && (
           <motion.div
+            key="job-details"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedJob(null)}
+            onClick={() => {
+              setSelectedJob(null);
+              setShowProposalForm(false);
+            }}
           >
             <motion.div
               initial={{ scale: 0.9 }}
@@ -156,7 +202,9 @@ const Services: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400">Budget:</span>
-                  <span className="ml-2 text-green-400">${selectedJob.budget}</span>
+                  <span className="ml-2 text-green-400">
+                    ${selectedJob.budget}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-400">Payment:</span>
@@ -164,31 +212,109 @@ const Services: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400">Posted:</span>
-                  <span className="ml-2">{new Date(selectedJob.postedDate).toLocaleDateString()}</span>
+                  <span className="ml-2">
+                    {new Date(selectedJob.postedDate).toLocaleDateString()}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-400">Deadline:</span>
-                  <span className="ml-2">{new Date(selectedJob.deadline).toLocaleDateString()}</span>
+                  <span className="ml-2">
+                    {new Date(selectedJob.deadline).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
               <div className="mb-4">
                 <span className="text-gray-400">Skills:</span>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedJob.skillsRequired.map((skill, index) => (
-                    <span key={index} className="bg-gray-700 text-xs px-2 py-1 rounded">
+                    <span
+                      key={index}
+                      className="bg-gray-700 text-xs px-2 py-1 rounded"
+                    >
                       {skill.replace(/["'\[\]]/g, "")}
                     </span>
                   ))}
                 </div>
               </div>
-              {selectedJob.status === "Open" && selectedJob.email !== userEmail && (
-                <button className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm">
-                  Send Proposal
-                </button>
-              )}
+              {selectedJob.status === "Open" &&
+                selectedJob.email !== userEmail && (
+                  <button
+                    onClick={() => setShowProposalForm(true)}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm"
+                  >
+                    Send Proposal
+                  </button>
+                )}
+              {selectedJob.status === "Closed" &&
+                selectedJob.email !== userEmail && (
+                  <button className="w-full bg-gray-500 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm cursor-not-allowed">
+                    Currently Closed
+                  </button>
+                )}
               {selectedJob.email === userEmail && (
                 <span className="text-yellow-400 text-sm">Your Post</span>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+        {showProposalForm && selectedJob && (
+          <motion.div
+            key="proposal-form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            onClick={() => setShowProposalForm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4">Send Proposal</h2>
+              <form onSubmit={handleSendProposal} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    value={proposalDescription}
+                    onChange={(e) => setProposalDescription(e.target.value)}
+                    required
+                    className="w-full bg-gray-700 text-white rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    rows={4}
+                  ></textarea>
+                </div>
+                <div>
+                  <label
+                    htmlFor="cv"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Upload CV (optional)
+                  </label>
+                  <input
+                    type="file"
+                    id="cv"
+                    onChange={(e) =>
+                      setProposalCV(e.target.files ? e.target.files[0] : null)
+                    }
+                    className="w-full bg-gray-700 text-white rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition duration-300 text-sm disabled:opacity-50"
+                >
+                  {isSubmitting ? "Sending..." : "Send Proposal"}
+                </button>
+              </form>
             </motion.div>
           </motion.div>
         )}
