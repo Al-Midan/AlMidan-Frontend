@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { toast, Toaster } from "sonner";
 import axiosInstance, {
   axiosInstanceMultipart,
 } from "@/shared/helpers/axiosInstance";
@@ -61,11 +63,25 @@ const Services: React.FC = () => {
     e.preventDefault();
     if (!selectedJob) return;
 
-    console.log("Description:", proposalDescription);
-    console.log("CV:", proposalCV);
+    const userData = localStorage.getItem("userData");
+    let userId = "";
+
+    if (userData) {
+      const user = JSON.parse(userData);
+      userId = user._id;
+    }
+
+    if (!userId) {
+      toast.error("User ID not found", {
+        style: { background: "#333", color: "#fff" },
+        position: "top-center",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     const formData = new FormData();
+    formData.append("userId", userId);
     formData.append("jobId", selectedJob._id);
     formData.append("jobOwner", selectedJob.username);
     formData.append("jobOwnerEmail", selectedJob.email);
@@ -79,12 +95,33 @@ const Services: React.FC = () => {
         SENDPROPOSAL,
         formData
       );
-      console.log("Proposal sent successfully:", response.data);
+      console.log("response", response);
+      const success = toast.success("Proposal sent successfully", {
+        className: cn(
+          "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-black/.1 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4"
+        ),
+        style: {
+          backdropFilter: "blur(16px) saturate(180%)",
+          backgroundColor: "rgba(17, 25, 40, 0.75)",
+          borderRadius: "12px",
+          border: "1px solid rgba(255, 255, 255, 0.125)",
+          color: "#fff",
+        },
+        position: "top-center",
+      });
+
+      setTimeout(() => {
+        toast.dismiss(success);
+      }, 2000);
       setShowProposalForm(false);
+      setSelectedJob(null);
       setProposalDescription("");
       setProposalCV(null);
     } catch (error) {
-      console.error("Error sending proposal:", error);
+      toast.error("Error sending proposal", {
+        style: { background: "#333", color: "#fff" },
+        position: "top-center",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,6 +130,7 @@ const Services: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
+        <Toaster />
         <h1 className="text-4xl font-bold mb-8 text-center mt-20">
           Job Listings
         </h1>
