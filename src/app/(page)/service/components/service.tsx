@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast, Toaster } from "sonner";
+import { useRouter } from "next/navigation";
 import axiosInstance, {
   axiosInstanceMultipart,
 } from "@/shared/helpers/axiosInstance";
@@ -35,7 +36,7 @@ const Services: React.FC = () => {
   const [proposalDescription, setProposalDescription] = useState("");
   const [proposalCV, setProposalCV] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchJobs = async () => {
       const userDataString = localStorage.getItem("userData");
@@ -130,7 +131,45 @@ const Services: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
+        <div className="absolute top-7 right-4">
+          <button
+            onClick={() => router.push("/service/JobsProposals")}
+            className={`
+    flex items-center justify-center
+    px-6 py-3 max-w-fit mx-auto
+    text-sm font-medium text-cyan-300
+    bg-gray-900 bg-opacity-70
+    border border-cyan-500 border-opacity-50
+    rounded-xl
+    shadow-lg shadow-cyan-500/20
+    transition-all duration-300 ease-in-out
+    hover:bg-cyan-900 hover:bg-opacity-30
+    hover:text-cyan-200 hover:border-cyan-400
+    hover:shadow-cyan-500/40
+    focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50
+    active:scale-95
+  `}
+            style={{
+              backdropFilter: "blur(10px) saturate(150%)",
+            }}
+          >
+            <span className="mr-2">My Jobs & Proposals</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
         <Toaster />
+
         <h1 className="text-4xl font-bold mb-8 text-center mt-20">
           Job Listings
         </h1>
@@ -334,7 +373,7 @@ const Services: React.FC = () => {
                     htmlFor="cv"
                     className="block text-sm font-medium text-gray-300 mb-1"
                   >
-                    Upload CV (optional)
+                    Upload CV
                   </label>
                   <input
                     type="file"
