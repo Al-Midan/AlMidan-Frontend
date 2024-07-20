@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import {
+  DELETEJOB,
   GetAllProposals,
   GETJOBREQUESTS,
   GETOURJOBPOST,
@@ -155,7 +156,13 @@ const JobProposal: React.FC = () => {
       console.error(`Error ${action}ing proposal:`, error);
     }
   };
-
+  const deleteJobPost =  async (jobId:string) =>{
+    try {
+      const resposne = await axiosInstance.delete(`${DELETEJOB}/${jobId}`)
+    } catch (error) {
+      console.error(`Error Deleting jonb Post:`, error);
+    }
+  }
   const renderJobCard = (job: Job) => (
     <motion.div
       key={job._id}
@@ -192,9 +199,12 @@ const JobProposal: React.FC = () => {
           </span>
         ))}
       </div>
-      <Link href={`/jobpostEdit/${job._id}`}>
+      <Link href={`/service/JobsProposals/${job._id}`}>
         <button className="w-full bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors duration-300 mt-2">
           Edit Job
+        </button>
+        <button onClick={()=>deleteJobPost(job._id)} className="w-full bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors duration-300 mt-2">
+          Delete the Post
         </button>
       </Link>
     </motion.div>
