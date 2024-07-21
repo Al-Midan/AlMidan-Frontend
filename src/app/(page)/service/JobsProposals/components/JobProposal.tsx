@@ -1,6 +1,9 @@
 "use client";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/shared/helpers/axiosInstance";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   DELETEJOB,
   GetAllProposals,
@@ -8,8 +11,6 @@ import {
   GETOURJOBPOST,
   PROPOSALSTATUS,
 } from "@/shared/helpers/endpoints";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
 
 interface Job {
   _id: string;
@@ -45,6 +46,7 @@ const JobProposal: React.FC = () => {
   const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [sentProposals, setSentProposals] = useState<Proposal[]>([]);
   const [receivedProposals, setReceivedProposals] = useState<Proposal[]>([]);
+  const [receivedProposalName, setReceivedProposalName] = useState<any>(null);
   const [activeSection, setActiveSection] = useState<
     "posted" | "sent" | "received"
   >("posted");
@@ -57,6 +59,9 @@ const JobProposal: React.FC = () => {
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(
     null
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,7 +119,9 @@ const JobProposal: React.FC = () => {
       const res = await axiosInstance.get<{
         response: { dbValues: Proposal[] };
       }>(`${GETJOBREQUESTS}/${userId}`);
+
       setReceivedProposals(res.data.response.dbValues);
+      setReceivedProposalName(res.data.response[0]);
       setLoading((prev) => ({ ...prev, received: false }));
     } catch (error) {
       console.error("Error fetching received proposals:", error);
@@ -136,11 +143,10 @@ const JobProposal: React.FC = () => {
     action: "accept" | "reject"
   ) => {
     try {
-      const response = await axiosInstance.post(
-        `${PROPOSALSTATUS}/${proposalId}`,
-        action
-      );
-      console.log("response", response);
+      const res = await axiosInstance.post(`${PROPOSALSTATUS}/${proposalId}`, {
+        action,
+      });
+      console.log("res", res);
 
       setReceivedProposals((prevProposals) =>
         prevProposals.map((proposal) =>
@@ -156,103 +162,138 @@ const JobProposal: React.FC = () => {
       console.error(`Error ${action}ing proposal:`, error);
     }
   };
-  const deleteJobPost =  async (jobId:string) =>{
+
+  const deleteJobPost = async (jobId: string) => {
     try {
-      const resposne = await axiosInstance.delete(`${DELETEJOB}/${jobId}`)
+      await axiosInstance.delete(`${DELETEJOB}/${jobId}`);
+      setPostedJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
     } catch (error) {
-      console.error(`Error Deleting jonb Post:`, error);
+      console.error(`Error deleting job post:`, error);
     }
-  }
+  };
+
   const renderJobCard = (job: Job) => (
     <motion.div
       key={job._id}
-      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
+      style={{
+        backdropFilter: "blur(16px) saturate(180%)",
+        backgroundColor: "rgba(17, 25, 40, 0.75)",
+        border: "1px solid rgba(255, 255, 255, 0.125)",
+      }}
     >
-      <h2 className="text-2xl mb-4 text-cyan-400 font-bold">{job.title}</h2>
-      <div className="mb-4 h-32 overflow-hidden rounded-lg">
+      <h2 className="text-xl mb-3 text-cyan-400 font-bold">{job.title}</h2>
+      <div className="mb-3 h-24 overflow-hidden rounded-lg">
         <img
           src={job.image}
           alt={job.title}
           className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-110"
         />
       </div>
-      <p className="text-sm mb-4 line-clamp-3 text-gray-300">
+      <p className="text-xs mb-3 line-clamp-2 text-gray-300">
         {job.description}
       </p>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <span className="text-xs text-gray-400">Category: {job.category}</span>
-        <span className="text-xs text-gray-400">Budget: ${job.budget}</span>
-        <span className="text-xs text-gray-400">Duration: {job.duration}</span>
-        <span className="text-xs text-gray-400">Status: {job.status}</span>
+      <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-400">
+        <span>Category: {job.category}</span>
+        <span>Budget: ${job.budget}</span>
+        <span>Duration: {job.duration}</span>
+        <span>Status: {job.status}</span>
       </div>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {job.skillsRequired.map((skill, index) => (
+      <div className="flex flex-wrap gap-1 mb-3">
+        {job.skillsRequired.slice(0, 3).map((skill, index) => (
           <span
             key={index}
-            className="bg-cyan-600 text-white px-2 py-1 rounded-full text-xs"
+            className="bg-cyan-800 text-cyan-200 px-2 py-1 rounded-full text-xs"
           >
             {skill.replace(/["'\[\]]/g, "")}
           </span>
         ))}
+        {job.skillsRequired.length > 3 && (
+          <span className="bg-cyan-800 text-cyan-200 px-2 py-1 rounded-full text-xs">
+            +{job.skillsRequired.length - 3} more
+          </span>
+        )}
       </div>
       <Link href={`/service/JobsProposals/${job._id}`}>
-        <button className="w-full bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors duration-300 mt-2">
+        <button className="w-full bg-indigo-700 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
           Edit Job
         </button>
-        <button onClick={()=>deleteJobPost(job._id)} className="w-full bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors duration-300 mt-2">
-          Delete the Post
-        </button>
       </Link>
+      <button
+        onClick={() => deleteJobPost(job._id)}
+        className="w-full bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors duration-300 mt-2 text-sm"
+      >
+        Delete Post
+      </button>
     </motion.div>
   );
 
   const renderProposalCard = (proposal: Proposal) => (
     <motion.div
       key={proposal._id}
-      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
+      style={{
+        backdropFilter: "blur(16px) saturate(180%)",
+        backgroundColor: "rgba(17, 25, 40, 0.75)",
+        border: "1px solid rgba(255, 255, 255, 0.125)",
+      }}
     >
-      <h2 className="text-2xl mb-4 text-cyan-400 font-bold">
-        Proposal for Job: {getJobTitle(proposal.jobId)}
+      <h2 className="text-xl mb-3 text-cyan-400 font-bold">
+        Proposal for Job:{" "}
+        {getJobTitle(proposal.jobId) === "Untitled Job"
+          ? receivedProposalName?.title
+          : getJobTitle(proposal.jobId)}
       </h2>
-      <p className="text-sm mb-4 line-clamp-3 text-gray-300">
+      <p className="text-xs mb-3 line-clamp-2 text-gray-300">
         {proposal.description}
       </p>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <span className="text-xs text-gray-400">
-          Job Owner: {proposal.jobOwner}
-        </span>
-        <span className="text-xs text-gray-400">Status: {proposal.status}</span>
+      <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-400">
+        <span>Job Owner: {proposal.jobOwner}</span>
+        <span>Status: {proposal.status}</span>
       </div>
       <button
         onClick={() => setSelectedProposal(proposal)}
-        className="w-full bg-cyan-600 text-white px-4 py-2 rounded-full hover:bg-cyan-700 transition-colors duration-300 mt-2"
+        className="w-full bg-teal-700 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition-colors duration-300 text-sm"
       >
         View Details
       </button>
       {activeSection === "received" && proposal.status === "pending" && (
-        <div className="mt-4 flex justify-between">
+        <div className="mt-2 flex justify-between">
           <button
             onClick={() => handleProposalAction(proposal._id, "accept")}
-            className="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors duration-300 flex-1 mr-2"
+            className="bg-green-700 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors duration-300 flex-1 mr-2 text-sm"
           >
             Accept
           </button>
           <button
             onClick={() => handleProposalAction(proposal._id, "reject")}
-            className="bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-colors duration-300 flex-1 ml-2"
+            className="bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors duration-300 flex-1 ml-2 text-sm"
           >
             Reject
           </button>
         </div>
       )}
+      {
+        proposal.status === "accept" && (
+          <div className="mt-2">
+            <button
+              onClick={() => {
+                /* Add your chat or message functionality here */
+              }}
+              className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
+            >
+              Send Message
+            </button>
+          </div>
+        )}
     </motion.div>
   );
 
@@ -271,50 +312,79 @@ const JobProposal: React.FC = () => {
       );
     }
 
+    let items: Job[] | Proposal[] = [];
+    switch (activeSection) {
+      case "posted":
+        items = postedJobs;
+        break;
+      case "sent":
+        items = sentProposals;
+        break;
+      case "received":
+        items = receivedProposals;
+        break;
+    }
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
     return (
       <AnimatePresence>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {activeSection === "posted" && postedJobs.map(renderJobCard)}
-          {activeSection === "sent" && sentProposals.map(renderProposalCard)}
-          {activeSection === "received" &&
-            receivedProposals.map(renderProposalCard)}
+          {currentItems.map((item) =>
+            activeSection === "posted"
+              ? renderJobCard(item as Job)
+              : renderProposalCard(item as Proposal)
+          )}
         </div>
       </AnimatePresence>
     );
   };
 
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   return (
-    <div className="min-h-screen p-8 font-sans bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white">
-      <h1 className="text-4xl mb-8 text-center text-cyan-400 font-bold">
+    <div className="min-h-screen p-4 md:p-8 font-sans bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white">
+      <h1 className="text-3xl md:text-4xl mb-6 md:mb-8 text-center text-cyan-400 font-bold mt-20">
         Job Dashboard
       </h1>
 
-      <div className="flex justify-center mb-8 bg-gray-800 rounded-full p-1">
+      <div className="flex justify-center mb-6 md:mb-8 bg-gray-800 bg-opacity-50 rounded-full p-1 max-w-2xl mx-auto">
         <button
-          onClick={() => setActiveSection("posted")}
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          onClick={() => {
+            setActiveSection("posted");
+            setCurrentPage(1);
+          }}
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
             activeSection === "posted"
-              ? "bg-cyan-600 text-white"
+              ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
           }`}
         >
           Posted Jobs
         </button>
         <button
-          onClick={() => setActiveSection("sent")}
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          onClick={() => {
+            setActiveSection("sent");
+            setCurrentPage(1);
+          }}
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
             activeSection === "sent"
-              ? "bg-cyan-600 text-white"
+              ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
           }`}
         >
           Sent Proposals
         </button>
         <button
-          onClick={() => setActiveSection("received")}
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          onClick={() => {
+            setActiveSection("received");
+            setCurrentPage(1);
+          }}
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
             activeSection === "received"
-              ? "bg-cyan-600 text-white"
+              ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
           }`}
         >
@@ -323,6 +393,34 @@ const JobProposal: React.FC = () => {
       </div>
 
       {renderContent()}
+
+      <div className="flex justify-center mt-6 md:mt-8">
+        {Array.from(
+          {
+            length: Math.ceil(
+              (activeSection === "posted"
+                ? postedJobs
+                : activeSection === "sent"
+                ? sentProposals
+                : receivedProposals
+              ).length / itemsPerPage
+            ),
+          },
+          (_, i) => (
+            <button
+              key={i}
+              onClick={() => paginate(i + 1)}
+              className={`mx-1 px-3 py-1 rounded-full text-sm ${
+                currentPage === i + 1
+                  ? "bg-indigo-700 text-white"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              }`}
+            >
+              {i + 1}
+            </button>
+          )
+        )}
+      </div>
 
       {selectedProposal && (
         <motion.div
@@ -335,33 +433,40 @@ const JobProposal: React.FC = () => {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-lg max-w-2xl w-full"
+            className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-lg max-w-md w-full"
+            style={{
+              backdropFilter: "blur(16px) saturate(180%)",
+              backgroundColor: "rgba(17, 25, 40, 0.75)",
+              border: "1px solid rgba(255, 255, 255, 0.125)",
+            }}
           >
             <h2 className="text-2xl mb-4 text-cyan-400 font-bold">
               Proposal Details
             </h2>
-            <p className="mb-4 text-gray-300">{selectedProposal.description}</p>
+            <p className="mb-4 text-gray-300 text-sm">
+              {selectedProposal.description}
+            </p>
             <div className="mb-4">
               <a
                 href={selectedProposal.image}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-cyan-600 text-white px-4 py-2 rounded-full hover:bg-cyan-700 transition-colors duration-300 inline-block"
+                className="bg-teal-700 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition-colors duration-300 inline-block text-sm"
               >
                 View Resume PDF
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <span className="text-sm text-gray-400">
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <span className="text-gray-400">
                 Job Owner: {selectedProposal.jobOwner}
               </span>
-              <span className="text-sm text-gray-400">
+              <span className="text-gray-400">
                 Status: {selectedProposal.status}
               </span>
             </div>
             <button
               onClick={() => setSelectedProposal(null)}
-              className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition-colors duration-300"
+              className="mt-4 bg-indigo-700 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors duration-300 w-full text-sm"
             >
               Close
             </button>
