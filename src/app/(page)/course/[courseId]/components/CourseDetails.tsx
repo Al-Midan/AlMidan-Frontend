@@ -125,18 +125,22 @@ const CourseDetailsPage = () => {
     if (userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree) {
       setSelectedLesson(lesson);
       setIsDecrypting(true);
-      try {
-        const decryptedUrl = decrypt(lesson.video);
-        setDecryptedVideoUrl(decryptedUrl);
-      } catch (error) {
-        console.error("Failed to decrypt video URL:", error);
-        toast.error("Failed to decrypt video", {
-          style: { background: "#1E293B", color: "white" },
-          position: "top-center",
-        });
-      } finally {
-        setIsDecrypting(false);
-      }
+console.log("clicked");
+
+      setTimeout(async () => {
+        try {
+          const decryptedUrl = decrypt(lesson.video);
+          setDecryptedVideoUrl(decryptedUrl);
+        } catch (error) {
+          console.error("Failed to decrypt video URL:", error);
+          toast.error("Failed to decrypt video", {
+            style: { background: "#1E293B", color: "white" },
+            position: "top-center",
+          });
+        } finally {
+          setIsDecrypting(false);
+        }
+      }, 0);
     } else {
       toast.error("Please enroll to access this lesson", {
         style: { background: "#1E293B", color: "white" },
