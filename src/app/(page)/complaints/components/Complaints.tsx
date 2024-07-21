@@ -52,6 +52,7 @@ const Complaints: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [enrolledCourses, setEnrolledCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasEnrolledCourses, setHasEnrolledCourses] = useState<boolean>(true);
 
   const [formData, setFormData] = useState<FormData>({
     serviceName: "",
@@ -62,6 +63,7 @@ const Complaints: React.FC = () => {
     description: "",
   });
 
+ 
   const FetchEnroll = async () => {
     setIsLoading(true);
     const userDataString = localStorage.getItem("userData");
@@ -79,13 +81,15 @@ const Complaints: React.FC = () => {
           username: course.username,
         }));
         setEnrolledCourses(courseData);
+        setHasEnrolledCourses(courseData.length > 0);
       } catch (error) {
         console.error("Error fetching enrolled courses:", error);
+        setHasEnrolledCourses(false);
       } finally {
         setIsLoading(false);
       }
     }
-  };
+  }
 
   useEffect(() => {
     FetchEnroll();
@@ -251,6 +255,7 @@ const Complaints: React.FC = () => {
                 enrolledCourses={enrolledCourses}
                 handleCourseSelect={handleCourseSelect}
                 isLoading={isLoading}
+                hasEnrolledCourses={hasEnrolledCourses}
               />
             )}
             {activeTab === "general" && (
@@ -298,7 +303,7 @@ const Complaints: React.FC = () => {
             <button
               type="submit"
               className="w-full mt-6 px-6 py-3 bg-blue-600 rounded hover:bg-blue-700 transition-colors duration-300 font-semibold text-sm sm:text-base disabled:opacity-50"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (activeTab === "courses" && !hasEnrolledCourses)}
             >
               {isSubmitting ? "Submitting..." : "Submit Complaint"}
             </button>
@@ -323,7 +328,7 @@ const Complaints: React.FC = () => {
             Our support team is available 24/7 to help you with any urgent
             issues.
           </p>
-          <a
+          <a 
             href="tel:+1234567890"
             className="text-blue-400 hover:text-blue-300 transition-colors duration-300 text-sm sm:text-base"
           >
@@ -334,7 +339,6 @@ const Complaints: React.FC = () => {
     </div>
   );
 };
-
 const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
   <button
     type="button"
@@ -377,25 +381,30 @@ const ServicesForm: React.FC<FormProps> = ({ formData, handleInputChange }) => (
   </>
 );
 
-const CoursesForm: React.FC<
-  FormProps & {
-    enrolledCourses: CourseData[];
-    handleCourseSelect: (course: CourseData) => void;
-    isLoading: boolean;
-  }
-> = ({
+const CoursesForm: React.FC<{
+  formData: {
+    courseName: string;
+    description: string;
+  };
+  handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  enrolledCourses: CourseData[];
+  handleCourseSelect: (course: CourseData) => void;
+  isLoading: boolean;
+  hasEnrolledCourses: boolean;
+}> = ({
   formData,
   handleInputChange,
   enrolledCourses,
   handleCourseSelect,
   isLoading,
+  hasEnrolledCourses,
 }) => (
   <>
     {isLoading ? (
       <div className="flex justify-center items-center h-32">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
-    ) : (
+    ) : hasEnrolledCourses ? (
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Select a course:
@@ -424,17 +433,27 @@ const CoursesForm: React.FC<
           ))}
         </div>
       </div>
+    ) : (
+      <div className="text-center mb-4">
+        <p className="text-lg mb-4">You haven&apos;t enrolled in any courses yet.</p>
+        <a
+          href="/course"
+          className="inline-block px-6 py-3 bg-blue-600 rounded hover:bg-blue-700 transition-colors duration-300 font-semibold text-sm sm:text-base"
+        >
+          Go to Courses
+        </a>
+      </div>
     )}
     <textarea
       name="description"
       value={formData.description}
       onChange={handleInputChange}
-      placeholder="Describe your complaint in detail"
+      placeholder={hasEnrolledCourses ? "Describe your complaint in detail" : "You need to enroll in a course before submitting a complaint"}
       className="w-full p-3 bg-gray-700 rounded h-32 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+      disabled={!hasEnrolledCourses}
     />
   </>
 );
-
 const GeneralForm: React.FC<FormProps> = ({ formData, handleInputChange }) => (
   <>
     <input

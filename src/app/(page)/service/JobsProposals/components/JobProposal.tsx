@@ -81,11 +81,15 @@ const JobProposal: React.FC = () => {
 
   const fetchPostedJobs = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: Job[] }>(
+      const res = await axiosInstance.get<{ response: Job[] | null }>(
         `${GETOURJOBPOST}/${userId}`
       );
-      setPostedJobs(res.data.response);
-      setAllJobs((prevJobs) => [...prevJobs, ...res.data.response]);
+      if (res.data.response) {
+        setPostedJobs(res.data.response);
+        setAllJobs((prevJobs) => [...prevJobs, ...res.data.response]);
+      } else {
+        setPostedJobs([]);
+      }
       setLoading((prev) => ({ ...prev, posted: false }));
     } catch (error) {
       console.error("Error fetching posted jobs:", error);
@@ -96,13 +100,17 @@ const JobProposal: React.FC = () => {
       setLoading((prev) => ({ ...prev, posted: false }));
     }
   };
-
+  
   const fetchSentProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
-        response: { dbValues: Proposal[] };
+        response: { dbValues: Proposal[] } | null;
       }>(`${GetAllProposals}/${userId}`);
-      setSentProposals(res.data.response.dbValues);
+      if (res.data.response && res.data.response.dbValues) {
+        setSentProposals(res.data.response.dbValues);
+      } else {
+        setSentProposals([]);
+      }
       setLoading((prev) => ({ ...prev, sent: false }));
     } catch (error) {
       console.error("Error fetching sent proposals:", error);
@@ -117,11 +125,16 @@ const JobProposal: React.FC = () => {
   const fetchReceivedProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
-        response: { dbValues: Proposal[] };
+        response: { dbValues: Proposal[] } | null;
       }>(`${GETJOBREQUESTS}/${userId}`);
-
-      setReceivedProposals(res.data.response.dbValues);
-      setReceivedProposalName(res.data.response[0]);
+  
+      if (res.data.response && res.data.response.dbValues) {
+        setReceivedProposals(res.data.response.dbValues);
+        setReceivedProposalName(res.data.response[0]);
+      } else {
+        setReceivedProposals([]);
+        setReceivedProposalName(null);
+      }
       setLoading((prev) => ({ ...prev, received: false }));
     } catch (error) {
       console.error("Error fetching received proposals:", error);
@@ -281,19 +294,18 @@ const JobProposal: React.FC = () => {
           </button>
         </div>
       )}
-      {
-        proposal.status === "accept" && (
-          <div className="mt-2">
-            <button
-              onClick={() => {
-                /* Add your chat or message functionality here */
-              }}
-              className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
-            >
-              Send Message
-            </button>
-          </div>
-        )}
+      {proposal.status === "accept" && (
+        <div className="mt-2">
+          <button
+            onClick={() => {
+              /* Add your chat or message functionality here */
+            }}
+            className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
+          >
+            Send Message
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 
@@ -323,6 +335,27 @@ const JobProposal: React.FC = () => {
       case "received":
         items = receivedProposals;
         break;
+    }
+
+    if (items.length === 0) {
+      return (
+        <div className="text-center">
+          <p className="text-gray-400 mb-4">
+            {activeSection === "posted"
+              ? "You haven't posted any jobs yet."
+              : activeSection === "sent"
+              ? "You haven't sent any proposals yet."
+              : "You haven't received any proposals yet."}
+          </p>
+          {activeSection === "posted" && (
+            <Link href="/service/createJob">
+              <button className="bg-indigo-700 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
+                Create a New Job
+              </button>
+            </Link>
+          )}
+        </div>
+      );
     }
 
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -473,6 +506,13 @@ const JobProposal: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
+      <div className="mt-8 text-center">
+        <Link href="/service/createJob">
+          <button className="bg-indigo-700 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
+            Create a New Job
+          </button>
+        </Link>
+      </div>
     </div>
   );
 };
