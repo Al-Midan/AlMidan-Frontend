@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/shared/helpers/axiosInstance";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   DELETEJOB,
@@ -61,7 +60,6 @@ const JobProposal: React.FC = () => {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,11 +82,12 @@ const JobProposal: React.FC = () => {
       const res = await axiosInstance.get<{ response: Job[] | null }>(
         `${GETOURJOBPOST}/${userId}`
       );
-      if (res.data.response) {
+      if (Array.isArray(res.data.response)) {
         setPostedJobs(res.data.response);
         setAllJobs((prevJobs) => [...prevJobs, ...res.data.response]);
       } else {
         setPostedJobs([]);
+        setAllJobs([]);
       }
       setLoading((prev) => ({ ...prev, posted: false }));
     } catch (error) {
@@ -317,13 +316,13 @@ const JobProposal: React.FC = () => {
         </div>
       );
     }
-
+  
     if (error[activeSection]) {
       return (
         <div className="text-red-500 text-center">{error[activeSection]}</div>
       );
     }
-
+  
     let items: Job[] | Proposal[] = [];
     switch (activeSection) {
       case "posted":
@@ -336,7 +335,7 @@ const JobProposal: React.FC = () => {
         items = receivedProposals;
         break;
     }
-
+  
     if (items.length === 0) {
       return (
         <div className="text-center">
@@ -357,6 +356,7 @@ const JobProposal: React.FC = () => {
         </div>
       );
     }
+  
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -506,13 +506,7 @@ const JobProposal: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
-      <div className="mt-8 text-center">
-        <Link href="/service/createJob">
-          <button className="bg-indigo-700 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
-            Create a New Job
-          </button>
-        </Link>
-      </div>
+     
     </div>
   );
 };
