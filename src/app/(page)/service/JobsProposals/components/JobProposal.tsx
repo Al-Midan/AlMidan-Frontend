@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   DELETEJOB,
   GetAllProposals,
@@ -41,6 +42,7 @@ interface Proposal {
 }
 
 const JobProposal: React.FC = () => {
+  const router = useRouter()
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [sentProposals, setSentProposals] = useState<Proposal[]>([]);
@@ -76,19 +78,23 @@ const JobProposal: React.FC = () => {
 
     fetchData();
   }, []);
-
   const fetchPostedJobs = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{ response: Job[] | null }>(
         `${GETOURJOBPOST}/${userId}`
       );
-      if (Array.isArray(res.data.response)) {
-        setPostedJobs(res.data.response);
-        setAllJobs((prevJobs) => [...prevJobs, ...res.data.response]);
+  
+      const jobs = res.data.response;
+  
+      if (Array.isArray(jobs)) {
+        setPostedJobs(jobs);
+        console.log("fetchPostedJobs", jobs);
+        setAllJobs((prevJobs) => [...prevJobs, ...jobs]);
       } else {
         setPostedJobs([]);
         setAllJobs([]);
       }
+  
       setLoading((prev) => ({ ...prev, posted: false }));
     } catch (error) {
       console.error("Error fetching posted jobs:", error);
@@ -100,12 +106,14 @@ const JobProposal: React.FC = () => {
     }
   };
   
+  
   const fetchSentProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
         response: { dbValues: Proposal[] } | null;
       }>(`${GetAllProposals}/${userId}`);
       if (res.data.response && res.data.response.dbValues) {
+        console.log("fetchSentProposals",res.data.response);
         setSentProposals(res.data.response.dbValues);
       } else {
         setSentProposals([]);
@@ -129,6 +137,7 @@ const JobProposal: React.FC = () => {
   
       if (res.data.response && res.data.response.dbValues) {
         setReceivedProposals(res.data.response.dbValues);
+        console.log("fetchReceivedProposals",res.data.response);
         setReceivedProposalName(res.data.response[0]);
       } else {
         setReceivedProposals([]);
@@ -183,7 +192,14 @@ const JobProposal: React.FC = () => {
       console.error(`Error deleting job post:`, error);
     }
   };
-
+  const handleSendMessage = (proposalId:string) => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      const currentUserId = parsedUserData._id;
+      router.push(`/chat?senderId=${currentUserId}&receiverId=${proposalId}`);
+    }
+  };
   const renderJobCard = (job: Job) => (
     <motion.div
       key={job._id}
@@ -296,9 +312,8 @@ const JobProposal: React.FC = () => {
       {proposal.status === "accept" && (
         <div className="mt-2">
           <button
-            onClick={() => {
-              /* Add your chat or message functionality here */
-            }}
+        onClick={()=>handleSendMessage(proposal.userId)}
+
             className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
           >
             Send Message
