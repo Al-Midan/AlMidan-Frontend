@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   motion,
   AnimatePresence,
@@ -9,9 +9,10 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { LOGOUT } from "@/shared/helpers/endpoints";
+import { useAppDispatch, useAppSelector } from "@/redux/hook";
+import { clearUser, setUser } from "@/redux/userSlice";
 
 export const FloatingNav = ({
   navItems,
@@ -26,12 +27,21 @@ export const FloatingNav = ({
 }) => {
   const { scrollYProgress } = useScroll();
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = React.useState(true);
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.user);
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      dispatch(setUser(JSON.parse(storedUserData)));
+    }
+  }, [dispatch]);
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     if (typeof current === "number") {
-      let direction = current! - scrollYProgress.getPrevious()!;
+      let direction = current - scrollYProgress.getPrevious()!;
       if (scrollYProgress.get() < 0.05) {
         setVisible(true);
       } else {
@@ -45,14 +55,16 @@ export const FloatingNav = ({
       localStorage.clear();
       const response = await axiosInstance.get(LOGOUT);
       if (response.status === 200) {
+        dispatch(clearUser());
         router.push("/login");
       } else {
-        console.error('Logout failed:', response.data);
+        console.error("Logout failed:", response.data);
       }
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -69,6 +81,7 @@ export const FloatingNav = ({
         }}
         className={cn(
           "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-black/.1 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4",
+          className
         )}
         style={{
           backdropFilter: "blur(16px) saturate(180%)",

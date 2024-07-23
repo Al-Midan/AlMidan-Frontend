@@ -8,8 +8,8 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import FormValues from "../interface";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setUser } from "../../../../redux/userSlice";
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/userSlice';
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { LOGIN } from "@/shared/helpers/endpoints";
 const Login = () => {
@@ -84,7 +84,6 @@ const Login = () => {
       console.log("User data stored", userData);
       dispatch(setUser(userData));
       localStorage.setItem("userData", JSON.stringify(userData));
-      // After successful login
       localStorage.setItem("accessToken", userData.accessToken);
       localStorage.setItem("refreshToken", userData.refreshToken);
 
@@ -96,7 +95,7 @@ const Login = () => {
         style: { background: "black", color: "white" },
         position: "top-center",
       });
-      if (userData.roles == "admin") {
+      if (userData.roles.includes("admin")) {
         router.replace("/admin");
       } else {
         router.replace("/home");
