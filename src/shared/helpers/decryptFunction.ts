@@ -5,8 +5,7 @@ const keyLength = 32;
 
 export function decrypt(encryptedText: string): string {
   const password =
-    process.env.NEXT_PUBLIC_ENCRYPTION_PASSWORD ||
-    "dGVzdGtleWZvc3Rlc3RpbmcxMjM0NTY3ODkwMT123eX";
+    process.env.NEXT_PUBLIC_ENCRYPTION_PASSWORD;
   if (!password) {
     throw new Error("ENCRYPTION_PASSWORD not set in environment variables");
   }

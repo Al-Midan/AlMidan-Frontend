@@ -163,7 +163,7 @@ console.log("clicked");
     try {
       setIsEnrolling(true);
       const options = {
-        key: "rzp_test_BKgZJwO5Jn8JWR",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: courseDetails!.coursePrice * 100,
         currency: "INR",
         name: "AlMidan",

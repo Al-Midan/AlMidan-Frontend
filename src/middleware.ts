@@ -50,7 +50,7 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
   if (accessToken) {
     console.log('Verifying access token and checking user role');
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_KEY || "qw8U4DWxcbsNZXWdjkUYheEzFshbDSNE");
+      const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_KEY);
       const { payload } = await jwtVerify(accessToken, secret);
 
       const response = await axiosInstance.get(USERVALUES, {
