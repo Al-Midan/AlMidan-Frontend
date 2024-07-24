@@ -30,14 +30,7 @@ export const FloatingNav = ({
   const [visible, setVisible] = React.useState(true);
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
 
-  useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      dispatch(setUser(JSON.parse(storedUserData)));
-    }
-  }, [dispatch]);
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     if (typeof current === "number") {

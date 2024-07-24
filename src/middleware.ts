@@ -25,28 +25,25 @@ export async function middleware(request: NextRequest) {
 
   // If user has both tokens and tries to access auth pages, redirect to appropriate home
   if (authRoutes.includes(request.nextUrl.pathname) && accessToken && refreshToken) {
-    console.log('Redirecting authenticated user from auth route');
-    // We'll determine the correct redirect in the token verification step
-    return verifyTokenAndRedirect(request, accessToken, refreshToken);
+    console.log('Authenticated user attempting to access auth route');
+    return verifyTokenAndRedirect(request, accessToken, refreshToken, true);
   }
 
-  // Allow access to login and register pages even without tokens
-  if (authRoutes.includes(request.nextUrl.pathname)) {
-    console.log('Allowing access to auth route');
-    return NextResponse.next();
-  }
-
-  // If neither access token nor refresh token is present, redirect to login for non-auth URLs
+  // If neither access token nor refresh token is present, allow access to auth routes, redirect to login for others
   if (!accessToken && !refreshToken) {
+    if (authRoutes.includes(request.nextUrl.pathname)) {
+      console.log('Unauthenticated user accessing auth route, allowing access');
+      return NextResponse.next();
+    }
     console.log('No tokens present, redirecting to login');
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // For all routes, verify token and check user role
-  return verifyTokenAndRedirect(request, accessToken, refreshToken);
+  // For all other routes, verify token and check user role
+  return verifyTokenAndRedirect(request, accessToken, refreshToken, false);
 }
 
-async function verifyTokenAndRedirect(request: NextRequest, accessToken: string | undefined, refreshToken: string | undefined) {
+async function verifyTokenAndRedirect(request: NextRequest, accessToken: string | undefined, refreshToken: string | undefined, isAuthRoute: boolean) {
   if (accessToken) {
     console.log('Verifying access token and checking user role');
     try {
@@ -67,6 +64,11 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
 
       const isAdmin = response.data.data.roles === "admin";
       const currentPath = request.nextUrl.pathname;
+
+      if (isAuthRoute) {
+        // Redirect to appropriate home page if trying to access auth routes
+        return NextResponse.redirect(new URL(isAdmin ? "/admin" : "/home", request.url));
+      }
 
       if (isAdmin) {
         if (!currentPath.startsWith("/admin")) {
@@ -90,7 +92,6 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
 
   return handleTokenRefresh(request, refreshToken);
 }
-
 async function handleTokenRefresh(request: NextRequest, refreshToken: string | undefined) {
   if (refreshToken) {
     console.log('Attempting to refresh token');
