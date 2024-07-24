@@ -22,6 +22,19 @@ interface Job {
   status: string;
 }
 
+interface ValidationErrors {
+  title?: string;
+  description?: string;
+  category?: string;
+  skillsRequired?: string;
+  budget?: string;
+  paymentType?: string;
+  duration?: string;
+  experienceLevel?: string;
+  deadline?: string;
+  status?: string;
+}
+
 const JobPostEdit: React.FC = () => {
   const { jobId } = useParams();
   const router = useRouter();
@@ -39,6 +52,8 @@ const JobPostEdit: React.FC = () => {
     status: "",
   });
 
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -53,16 +68,45 @@ const JobPostEdit: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setJob((prev) => ({ ...prev, [name]: value }));
+    setJob((prev) => ({ ...prev, [name]: value === "" ? null : value }));
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof ValidationErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+  const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const skills = e.target.value.split(",").map((skill) => skill.trim()).filter((skill) => skill !== "");
+    setJob((prev) => ({ ...prev, skillsRequired: skills }));
+    if (errors.skillsRequired) {
+      setErrors((prev) => ({ ...prev, skillsRequired: undefined }));
+    }
   };
 
-  const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const skills = e.target.value.split(",").map((skill) => skill.trim());
-    setJob((prev) => ({ ...prev, skillsRequired: skills }));
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+  
+    if (!job.title || job.title.trim() === "") newErrors.title = "Title is required";
+    if (!job.description || job.description.trim() === "") newErrors.description = "Description is required";
+    if (!job.category || job.category.trim() === "") newErrors.category = "Category is required";
+    if (!job.skillsRequired || job.skillsRequired.length === 0) newErrors.skillsRequired = "At least one skill is required";
+    if (job.budget === null || job.budget === undefined || job.budget < 0) newErrors.budget = "Budget must be a non-negative number";
+    if (!job.paymentType || job.paymentType.trim() === "") newErrors.paymentType = "Payment type is required";
+    if (!job.duration || job.duration.trim() === "") newErrors.duration = "Duration is required";
+    if (!job.experienceLevel || job.experienceLevel.trim() === "") newErrors.experienceLevel = "Experience level is required";
+    if (!job.deadline || job.deadline.trim() === "") newErrors.deadline = "Deadline is required";
+    if (!job.status || job.status.trim() === "") newErrors.status = "Status is required";
+  
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please correct the errors before submitting");
+      return;
+    }
     try {
       await axiosInstance.put(`${JOBEDIT}/${jobId}`, job);
       toast.success("Job updated successfully");
@@ -71,6 +115,11 @@ const JobPostEdit: React.FC = () => {
       toast.error("Failed to update job");
     }
   };
+
+  const inputClassName = (fieldName: keyof ValidationErrors) => `
+    w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300
+    ${errors[fieldName] ? 'border-2 border-red-500' : ''}
+  `;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100 p-8">
@@ -97,8 +146,9 @@ const JobPostEdit: React.FC = () => {
                 name="title"
                 value={job.title}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('title')}
               />
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-300 mb-2">Category</label>
@@ -107,8 +157,9 @@ const JobPostEdit: React.FC = () => {
                 name="category"
                 value={job.category}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('category')}
               />
+              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
             </div>
           </div>
 
@@ -118,8 +169,9 @@ const JobPostEdit: React.FC = () => {
               name="description"
               value={job.description}
               onChange={handleInputChange}
-              className="w-full bg-gray-700 text-white p-3 rounded-lg h-32 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+              className={`${inputClassName('description')} h-32`}
             />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,8 +182,9 @@ const JobPostEdit: React.FC = () => {
                 name="skillsRequired"
                 value={job.skillsRequired.join(", ")}
                 onChange={handleSkillsChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('skillsRequired')}
               />
+              {errors.skillsRequired && <p className="text-red-500 text-sm mt-1">{errors.skillsRequired}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-300 mb-2">Budget</label>
@@ -140,8 +193,9 @@ const JobPostEdit: React.FC = () => {
                 name="budget"
                 value={job.budget}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('budget')}
               />
+              {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
             </div>
           </div>
 
@@ -152,11 +206,12 @@ const JobPostEdit: React.FC = () => {
                 name="paymentType"
                 value={job.paymentType}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('paymentType')}
               >
                 <option value="Fixed Price">Fixed Price</option>
                 <option value="Hourly">Hourly</option>
               </select>
+              {errors.paymentType && <p className="text-red-500 text-sm mt-1">{errors.paymentType}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-300 mb-2">Duration</label>
@@ -165,8 +220,9 @@ const JobPostEdit: React.FC = () => {
                 name="duration"
                 value={job.duration}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('duration')}
               />
+              {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-300 mb-2">Experience Level</label>
@@ -174,12 +230,14 @@ const JobPostEdit: React.FC = () => {
                 name="experienceLevel"
                 value={job.experienceLevel}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('experienceLevel')}
               >
+                <option value="">Select experience level</option>
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
                 <option value="Expert">Expert</option>
               </select>
+              {errors.experienceLevel && <p className="text-red-500 text-sm mt-1">{errors.experienceLevel}</p>}
             </div>
           </div>
 
@@ -191,8 +249,9 @@ const JobPostEdit: React.FC = () => {
                 name="deadline"
                 value={job.deadline}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('deadline')}
               />
+              {errors.deadline && <p className="text-red-500 text-sm mt-1">{errors.deadline}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-300 mb-2">Status</label>
@@ -200,11 +259,13 @@ const JobPostEdit: React.FC = () => {
                 name="status"
                 value={job.status}
                 onChange={handleInputChange}
-                className="w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                className={inputClassName('status')}
               >
+                <option value="">Select status</option>
                 <option value="Open">Open</option>
                 <option value="Closed">Closed</option>
               </select>
+              {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
             </div>
           </div>
 
