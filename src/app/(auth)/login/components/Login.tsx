@@ -18,6 +18,8 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const backgroundImage ="https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -200,7 +202,7 @@ const Login = () => {
         <div
           className="relative z-10 max-w-[600px] max-h-[700px] bg-cover border border-white/5 rounded-3xl"
           style={{
-            backgroundImage: "url(./loginpage.webp)",
+            backgroundImage: `url(${backgroundImage})`,
             height: "calc(100vh - 80px)",
           }}
         >
