@@ -47,7 +47,7 @@ const JobProposal: React.FC = () => {
   const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [sentProposals, setSentProposals] = useState<Proposal[]>([]);
   const [receivedProposals, setReceivedProposals] = useState<Proposal[]>([]);
-  const [receivedProposalName, setReceivedProposalName] = useState<any>(null);
+  const [jobDocuments, setJobDocuments] = useState<Job[]>([]);
   const [activeSection, setActiveSection] = useState<
     "posted" | "sent" | "received"
   >("posted");
@@ -110,13 +110,15 @@ const JobProposal: React.FC = () => {
   const fetchSentProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
-        response: { dbValues: Proposal[] } | null;
+        response: { dbValues: Proposal[]; jobDocuments: Job[] } | null;
       }>(`${GetAllProposals}/${userId}`);
       if (res.data.response && res.data.response.dbValues) {
-        console.log("fetchSentProposals",res.data.response);
+        console.log("fetchSentProposals", res.data.response);
         setSentProposals(res.data.response.dbValues);
+        setJobDocuments(res.data.response.jobDocuments || []);
       } else {
         setSentProposals([]);
+        setJobDocuments([]);
       }
       setLoading((prev) => ({ ...prev, sent: false }));
     } catch (error) {
@@ -132,16 +134,18 @@ const JobProposal: React.FC = () => {
   const fetchReceivedProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
-        response: { dbValues: Proposal[] } | null;
+        response: { dbValues: Proposal[]; jobDocuments: Job[] } | null;
       }>(`${GETJOBREQUESTS}/${userId}`);
   
       if (res.data.response && res.data.response.dbValues) {
         setReceivedProposals(res.data.response.dbValues);
-        console.log("fetchReceivedProposals",res.data.response);
-        setReceivedProposalName(res.data.response[0]);
+        setJobDocuments((prevDocs) => [
+          ...prevDocs,
+          ...(res.data.response?.jobDocuments || []),
+        ]);
+        console.log("fetchReceivedProposals", res.data.response);
       } else {
         setReceivedProposals([]);
-        setReceivedProposalName(null);
       }
       setLoading((prev) => ({ ...prev, received: false }));
     } catch (error) {
@@ -155,7 +159,7 @@ const JobProposal: React.FC = () => {
   };
 
   const getJobTitle = (jobId: string) => {
-    const job = allJobs.find((job) => job._id === jobId);
+    const job = jobDocuments.find((job) => job._id === jobId);
     return job ? job.title : "Untitled Job";
   };
 
@@ -262,24 +266,21 @@ const JobProposal: React.FC = () => {
 
   const renderProposalCard = (proposal: Proposal) => (
     <motion.div
-      key={proposal._id}
-      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-      style={{
-        backdropFilter: "blur(16px) saturate(180%)",
-        backgroundColor: "rgba(17, 25, 40, 0.75)",
-        border: "1px solid rgba(255, 255, 255, 0.125)",
-      }}
-    >
-      <h2 className="text-xl mb-3 text-cyan-400 font-bold">
-        Proposal for Job:{" "}
-        {getJobTitle(proposal.jobId) === "Untitled Job"
-          ? receivedProposalName?.title
-          : getJobTitle(proposal.jobId)}
-      </h2>
+    key={proposal._id}
+    className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3 }}
+    style={{
+      backdropFilter: "blur(16px) saturate(180%)",
+      backgroundColor: "rgba(17, 25, 40, 0.75)",
+      border: "1px solid rgba(255, 255, 255, 0.125)",
+    }}
+  >
+    <h2 className="text-xl mb-3 text-cyan-400 font-bold">
+      Proposal for Job: {getJobTitle(proposal.jobId)}
+    </h2>
       <p className="text-xs mb-3 line-clamp-2 text-gray-300">
         {proposal.description}
       </p>
