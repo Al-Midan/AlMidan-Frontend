@@ -45,9 +45,9 @@ export const FloatingNav = ({
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
       const response = await axiosInstance.get(LOGOUT);
       if (response.status === 200) {
+        localStorage.clear();
         dispatch(clearUser());
         router.push("/login");
       } else {
