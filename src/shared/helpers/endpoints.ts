@@ -31,6 +31,8 @@ export const GETGENERALCOMPLAINTS =
   "/general-service/complaints/getGeneralComplaints";
 export const CREATEJOB = "/freelance-service/createJob";
 export const GETALLJOB = "/freelance-service/getAllJob";
+export const GETALLADMINJOB = "/freelance-service/getAllAdminJob";
+export const JOBBLOCK = "/freelance-service/jobBlock";
 export const SENDPROPOSAL = "/freelance-service/sendProposal";
 export const GETOURJOBPOST = "/freelance-service/getUserJobs";
 export const GetAllProposals = "/freelance-service/getAllProposals";

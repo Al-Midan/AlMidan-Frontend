@@ -1,4 +1,3 @@
-// components/NavbarWrapper.tsx
 "use client";
 
 import { FloatingNav } from "@/components/ui/FloatingNavbar";

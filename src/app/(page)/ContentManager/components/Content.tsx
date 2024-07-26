@@ -8,7 +8,7 @@ const Content = () => {
   const items = [
     { title: 'Course Creation', href: '/course/addCourse', icon: FaGraduationCap },
     { title: 'Job Creation', href: '/service/createJob', icon: FaBriefcase },
-    { title: 'Skilled Post Creation', href: '/create-skilled-post', icon: FaPencilAlt },
+    { title: 'Skilled Post Creation', href: '/service/createSkill', icon: FaPencilAlt },
   ];
 
   return (

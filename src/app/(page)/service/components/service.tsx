@@ -46,6 +46,8 @@ const Services: React.FC = () => {
       }
       try {
         const response = await axiosInstance.get(GETALLJOB);
+        console.log("response", response);
+
         setJobs(response.data.response);
       } catch (error) {
         console.error("Error fetching jobs:", error);
