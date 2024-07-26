@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast, Toaster } from "sonner";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { GETALLADMINJOB, JOBBLOCK } from "@/shared/helpers/endpoints";
@@ -19,15 +19,15 @@ interface Job {
   experienceLevel: "Beginner" | "Intermediate" | "Expert";
   postedDate: string;
   deadline: string;
-  status: "Approved" | "Blocked";
+  isBlock: boolean;
   image: string;
-  isBlock: boolean
 }
 
 const AdminJobManagement: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [jobsPerPage] = useState(12);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -48,16 +48,24 @@ const AdminJobManagement: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const toggleJobStatus = async (jobId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "Approved" ? "Blocked" : "Approved";
+  const toggleJobStatus = async (jobId: string, currentIsBlock: boolean) => {
+    const newIsBlock = !currentIsBlock;
     try {
-      await axiosInstance.post(JOBBLOCK, { jobId, status: newStatus });
-      setJobs(jobs.map(job => job._id === jobId ? { ...job, status: newStatus } : job));
-      toast.success(`Job ${newStatus.toLowerCase()} successfully`);
+      await axiosInstance.post(JOBBLOCK, { jobId, isBlock: newIsBlock });
+      setJobs(jobs.map(job => job._id === jobId ? { ...job, isBlock: newIsBlock } : job));
+      toast.success(`Job ${newIsBlock ? 'blocked' : 'approved'} successfully`);
     } catch (error) {
       console.error("Error toggling job status:", error);
       toast.error("Error updating job status");
     }
+  };
+
+  const openJobDetails = (job: Job) => {
+    setSelectedJob(job);
+  };
+
+  const closeJobDetails = () => {
+    setSelectedJob(null);
   };
 
   return (
@@ -111,19 +119,25 @@ const AdminJobManagement: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-gray-400 mb-2">
-                  <span>Status: {job.status}</span>
+                  <span>Status: {job.isBlock ? 'Blocked' : 'Approved'}</span>
                 </div>
               </div>
-              <div className="p-4">
+              <div className="p-4 flex justify-between">
                 <button
-                  onClick={() => toggleJobStatus(job._id, job.status)}
-                  className={`w-full px-4 py-2 rounded-full shadow-lg transition duration-300 text-sm ${
-                    job.status === "Approved"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "bg-green-500 hover:bg-green-600 text-white"
+                  onClick={() => openJobDetails(job)}
+                  className="px-4 py-2 rounded-full shadow-lg transition duration-300 text-sm bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  View More
+                </button>
+                <button
+                  onClick={() => toggleJobStatus(job._id, job.isBlock)}
+                  className={`px-4 py-2 rounded-full shadow-lg transition duration-300 text-sm ${
+                    job.isBlock
+                      ? "bg-green-500 hover:bg-green-600 text-white"
+                      : "bg-red-500 hover:bg-red-600 text-white"
                   }`}
                 >
-                  {job.status === "Approved" ? "Block" : "Approve"}
+                  {job.isBlock ? "Approve" : "Block"}
                 </button>
               </div>
             </motion.div>
@@ -148,6 +162,61 @@ const AdminJobManagement: React.FC = () => {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedJob && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            onClick={closeJobDetails}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4">{selectedJob.title}</h2>
+              <p className="mb-2"><strong>Description:</strong> {selectedJob.description}</p>
+              <p className="mb-2"><strong>Category:</strong> {selectedJob.category}</p>
+              <p className="mb-2"><strong>Skills Required:</strong> {selectedJob.skillsRequired.join(', ')}</p>
+              <p className="mb-2"><strong>Budget:</strong> ${selectedJob.budget}</p>
+              <p className="mb-2"><strong>Payment Type:</strong> {selectedJob.paymentType}</p>
+              <p className="mb-2"><strong>Duration:</strong> {selectedJob.duration}</p>
+              <p className="mb-2"><strong>Posted By:</strong> {selectedJob.username}</p>
+              <p className="mb-2"><strong>Email:</strong> {selectedJob.email}</p>
+              <p className="mb-2"><strong>Experience Level:</strong> {selectedJob.experienceLevel}</p>
+              <p className="mb-2"><strong>Posted Date:</strong> {new Date(selectedJob.postedDate).toLocaleDateString()}</p>
+              <p className="mb-2"><strong>Deadline:</strong> {new Date(selectedJob.deadline).toLocaleDateString()}</p>
+              <p className="mb-4"><strong>Status:</strong> {selectedJob.isBlock ? 'Blocked' : 'Approved'}</p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    toggleJobStatus(selectedJob._id, selectedJob.isBlock);
+                    closeJobDetails();
+                  }}
+                  className={`px-4 py-2 rounded-full shadow-lg transition duration-300 text-sm mr-2 ${
+                    selectedJob.isBlock
+                      ? "bg-green-500 hover:bg-green-600 text-white"
+                      : "bg-red-500 hover:bg-red-600 text-white"
+                  }`}
+                >
+                  {selectedJob.isBlock ? "Approve" : "Block"}
+                </button>
+                <button
+                  onClick={closeJobDetails}
+                  className="px-4 py-2 rounded-full shadow-lg transition duration-300 text-sm bg-gray-600 hover:bg-gray-700 text-white"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
