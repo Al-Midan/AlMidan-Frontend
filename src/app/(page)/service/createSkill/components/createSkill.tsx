@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useRef, ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
 import { useForm, SubmitHandler, UseFormRegister, FieldError } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { toast, Toaster } from "sonner";
 import { FaUser, FaEnvelope, FaBriefcase, FaStar, FaClock, FaImage } from "react-icons/fa";
+import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
+import { CREATESKILL } from "@/shared/helpers/endpoints";
 
 const skillSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -53,9 +54,7 @@ const AddSkillPage: React.FC = () => {
     });
 
     try {
-      await axios.post("/api/skills", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axiosInstanceMultipart.post(CREATESKILL, formData);
       toast.success("Skill added successfully!");
       // Handle success (e.g., reset form, redirect)
     } catch (error) {
@@ -178,6 +177,7 @@ const AddSkillPage: React.FC = () => {
                 <div className="flex items-center space-x-4">
                   <input
                     type="file"
+                    name="image"
                     accept="image/*"
                     onChange={handleImageChange}
                     ref={fileInputRef}

@@ -41,3 +41,4 @@ export const PROPOSALSTATUS = "/freelance-service/proposalStatus";
 export const JOBDETAILSWITHID = "/freelance-service/jobDetailsWithId";
 export const JOBEDIT = "/freelance-service/jobEdit";
 export const DELETEJOB = "/freelance-service/deleteJob";
+export const CREATESKILL = "/freelance-service/createSkill";
