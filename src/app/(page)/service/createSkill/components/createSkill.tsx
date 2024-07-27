@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { toast, Toaster } from "sonner";
-import { FaUser, FaEnvelope, FaBriefcase, FaStar, FaClock, FaImage } from "react-icons/fa";
+import { FaUser, FaBriefcase, FaStar, FaClock, FaImage } from "react-icons/fa";
 import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 import { CREATESKILL } from "@/shared/helpers/endpoints";
 
@@ -18,7 +18,6 @@ const skillSchema = z.object({
   yearsOfExperience: z.coerce.number().min(1, "At least 1 year of experience is required"),
   availability: z.enum(["Full-time", "Part-time", "Freelance"]),
   username: z.string().min(1, "Username is required"),
-  email: z.string().email("Invalid email address"),
   image: z.instanceof(File).optional().refine(
     (file) => !file || file.size <= 5 * 1024 * 1024,
     "Image must be 5MB or less"
@@ -52,6 +51,11 @@ const AddSkillPage: React.FC = () => {
         formData.append(key, String(value));
       }
     });
+
+    // Retrieve email from localStorage
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const email = userData.email || '';
+    formData.append('email', email);
 
     try {
       await axiosInstanceMultipart.post(CREATESKILL, formData);
@@ -159,15 +163,6 @@ const AddSkillPage: React.FC = () => {
                 error={errors.username}
                 isDirty={dirtyFields.username}
                 icon={<FaUser className="text-cyan-400" />}
-              />
-              <InputField
-                name="email"
-                label="Email"
-                register={register}
-                error={errors.email}
-                isDirty={dirtyFields.email}
-                type="email"
-                icon={<FaEnvelope className="text-cyan-400" />}
               />
               <div className="space-y-2">
                 <label htmlFor="image" className=" text-sm font-medium flex items-center">
