@@ -42,3 +42,7 @@ export const JOBDETAILSWITHID = "/freelance-service/jobDetailsWithId";
 export const JOBEDIT = "/freelance-service/jobEdit";
 export const DELETEJOB = "/freelance-service/deleteJob";
 export const CREATESKILL = "/freelance-service/createSkill";
+export const GETSKILLS = "/freelance-service/getSkill";
+export const SENDSKILLPROPOSAL = "/freelance-service/skillProposal";
+export const GETADMINSKILLS = "/freelance-service/getAdminSkill";
+export const TOGGLESKILLBLOCK = "/freelance-service/skillBlock";
