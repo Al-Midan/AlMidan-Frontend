@@ -2,7 +2,7 @@
 
 import { FloatingNav } from "@/components/ui/FloatingNavbar";
 import { navItems } from "@/data";
-import { useAppSelector } from '@/redux/hook';
+import { useAppSelector } from "@/redux/hook";
 
 export default function NavbarWrapper() {
   const user = useAppSelector((state) => state.user);
@@ -27,11 +27,7 @@ export default function NavbarWrapper() {
     { name: "LogOut", link: "/login" },
   ];
 
-  const navItemss = user.roles.includes("admin") ? adminNavItems : defaultNavItems;
+  const navItemss = user.roles === "admin" ? adminNavItems : defaultNavItems;
 
-  return (
-    <FloatingNav 
-      navItems={user._id ? navItemss : navItems}
-    />
-  );
+  return <FloatingNav navItems={user._id ? navItemss : navItems} />;
 }

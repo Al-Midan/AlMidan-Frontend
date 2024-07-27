@@ -6,7 +6,7 @@ interface UserState {
   email: string | null;
   isBlocked: boolean;
   isVerified: boolean;
-  roles: string[];
+  roles:string | null;
   accessToken: string | null;
   refreshToken: string | null;
 }
@@ -17,7 +17,7 @@ const initialState: UserState = {
   email: null,
   isBlocked: false,
   isVerified: false,
-  roles: [],
+  roles: null,
   accessToken: null,
   refreshToken: null,
 };
