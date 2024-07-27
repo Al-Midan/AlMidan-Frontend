@@ -34,7 +34,7 @@ const AdminSkillPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(GETADMINSKILLS);
-      setSkills(response.data);
+      setSkills(response.data.response);
       setError(null);
     } catch (error) {
       console.error('Error fetching skills:', error);
@@ -99,17 +99,28 @@ const SkillCard: React.FC<{
 }> = ({ skill, onToggleBlock, onViewDetails }) => (
   <motion.div
     whileHover={{ scale: 1.05 }}
-    className="bg-black bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden"
+    className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
   >
+    <div className="relative h-48 overflow-hidden">
+      <img 
+        src={skill.image} 
+        alt={skill.title} 
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+      <span className="absolute bottom-2 left-2 bg-purple-600 text-white px-2 py-1 rounded-full text-sm">
+        {skill.category}
+      </span>
+    </div>
     <div className="p-6">
-      <h3 className="text-2xl font-bold mb-2">{skill.title}</h3>
-      <p className="text-gray-300 mb-4">{skill.description.substring(0, 100)}...</p>
-      <div className="flex justify-between items-center">
-        <span className="text-purple-400">{skill.category}</span>
-        <span className="text-green-400">{skill.proficiency}</span>
+      <h3 className="text-2xl font-bold mb-2 text-white">{skill.title}</h3>
+      <p className="text-gray-300 mb-4 text-sm">{skill.description.substring(0, 80)}...</p>
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-green-400 text-sm">{skill.proficiency}</span>
+        <span className="text-blue-400 text-sm">{skill.yearsOfExperience} years</span>
       </div>
-      <div className="mt-6 flex justify-between items-center">
-        <Button onClick={onViewDetails} className="bg-gradient-to-r from-blue-500 to-purple-500">
+      <div className="flex justify-between items-center">
+        <Button onClick={onViewDetails} className="bg-purple-600 hover:bg-purple-700 transition-colors">
           View Details
         </Button>
         <ToggleButton
