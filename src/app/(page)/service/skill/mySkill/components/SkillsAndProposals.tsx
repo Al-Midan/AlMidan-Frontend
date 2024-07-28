@@ -41,15 +41,20 @@ const SkillsAndProposals: React.FC = () => {
   const router = useRouter();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [sentProposals, setSentProposals] = useState<SkillProposal[]>([]);
-  const [receivedProposals, setReceivedProposals] = useState<SkillProposal[]>([]);
-  const [activeSection, setActiveSection] = useState<"skills" | "sent" | "received">("skills");
+  const [receivedProposals, setReceivedProposals] = useState<SkillProposal[]>(
+    []
+  );
+  const [activeSection, setActiveSection] = useState<
+    "skills" | "sent" | "received"
+  >("skills");
   const [loading, setLoading] = useState({
     skills: true,
     sent: true,
     received: true,
   });
   const [error, setError] = useState({ skills: "", sent: "", received: "" });
-  const [selectedProposal, setSelectedProposal] = useState<SkillProposal | null>(null);
+  const [selectedProposal, setSelectedProposal] =
+    useState<SkillProposal | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -58,7 +63,7 @@ const SkillsAndProposals: React.FC = () => {
       const userDetails = localStorage.getItem("userData");
       const user = userDetails ? JSON.parse(userDetails) : {};
       const userId = user._id;
-    
+
       if (userId) {
         await fetchSkills(userId);
         await fetchSentProposals(userId);
@@ -71,7 +76,9 @@ const SkillsAndProposals: React.FC = () => {
 
   const fetchSkills = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: Skill[] | null }>(`${GETOURSKILLS}/${userId}`);
+      const res = await axiosInstance.get<{ response: Skill[] | null }>(
+        `${GETOURSKILLS}/${userId}`
+      );
       const skills = res.data.response;
 
       if (Array.isArray(skills)) {
@@ -93,7 +100,9 @@ const SkillsAndProposals: React.FC = () => {
 
   const fetchSentProposals = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(`${GetAllSkillProposals}/${userId}`);
+      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(
+        `${GetAllSkillProposals}/${userId}`
+      );
       if (res.data.response) {
         setSentProposals(res.data.response);
       } else {
@@ -112,7 +121,9 @@ const SkillsAndProposals: React.FC = () => {
 
   const fetchReceivedProposals = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(`${GETSKILLREQUESTS}/${userId}`);
+      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(
+        `${GETSKILLREQUESTS}/${userId}`
+      );
       if (res.data.response) {
         setReceivedProposals(res.data.response);
       } else {
@@ -129,13 +140,21 @@ const SkillsAndProposals: React.FC = () => {
     }
   };
 
-  const handleProposalAction = async (proposalId: string, action: "accept" | "reject") => {
+  const handleProposalAction = async (
+    proposalId: string,
+    action: "accept" | "reject"
+  ) => {
     try {
-      await axiosInstance.post(`${SKILLPROPOSALSTATUS}/${proposalId}`, { action });
+      await axiosInstance.post(`${SKILLPROPOSALSTATUS}/${proposalId}`, {
+        action,
+      });
       setReceivedProposals((prevProposals) =>
         prevProposals.map((proposal) =>
           proposal._id === proposalId
-            ? { ...proposal, status: action === "accept" ? "accepted" : "rejected" }
+            ? {
+                ...proposal,
+                status: action === "accept" ? "accepted" : "rejected",
+              }
             : proposal
         )
       );
@@ -147,7 +166,9 @@ const SkillsAndProposals: React.FC = () => {
   const deleteSkill = async (skillId: string) => {
     try {
       await axiosInstance.delete(`${DELETESKILL}/${skillId}`);
-      setSkills((prevSkills) => prevSkills.filter((skill) => skill._id !== skillId));
+      setSkills((prevSkills) =>
+        prevSkills.filter((skill) => skill._id !== skillId)
+      );
     } catch (error) {
       console.error(`Error deleting skill:`, error);
     }
@@ -170,7 +191,9 @@ const SkillsAndProposals: React.FC = () => {
           className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-110"
         />
       </div>
-      <p className="text-xs mb-3 line-clamp-2 text-gray-300">{skill.description}</p>
+      <p className="text-xs mb-3 line-clamp-2 text-gray-300">
+        {skill.description}
+      </p>
       <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-400">
         <span>Category: {skill.category}</span>
         <span>Proficiency: {skill.proficiency}</span>
@@ -200,8 +223,12 @@ const SkillsAndProposals: React.FC = () => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <h2 className="text-xl mb-3 text-cyan-400 font-bold">Proposal for Skill</h2>
-      <p className="text-xs mb-3 line-clamp-2 text-gray-300">{proposal.description}</p>
+      <h2 className="text-xl mb-3 text-cyan-400 font-bold">
+        Proposal for Skill
+      </h2>
+      <p className="text-xs mb-3 line-clamp-2 text-gray-300">
+        {proposal.description}
+      </p>
       <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-400">
         <span>Owner Email: {proposal.OwnerEmail}</span>
         <span>Status: {proposal.status}</span>
@@ -241,7 +268,9 @@ const SkillsAndProposals: React.FC = () => {
     }
 
     if (error[activeSection]) {
-      return <div className="text-red-500 text-center">{error[activeSection]}</div>;
+      return (
+        <div className="text-red-500 text-center">{error[activeSection]}</div>
+      );
     }
 
     let items: Skill[] | SkillProposal[] = [];
@@ -369,7 +398,7 @@ const SkillsAndProposals: React.FC = () => {
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
             >
-             {i + 1}
+              {i + 1}
             </button>
           )
         )}
@@ -400,7 +429,7 @@ const SkillsAndProposals: React.FC = () => {
               {selectedProposal.description}
             </p>
             <div className="mb-4">
-              <a 
+              <a
                 href={selectedProposal.image}
                 target="_blank"
                 rel="noopener noreferrer"

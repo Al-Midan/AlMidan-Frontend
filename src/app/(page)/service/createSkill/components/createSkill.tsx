@@ -1,7 +1,12 @@
 "use client";
 import React, { useState, useRef, ChangeEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useForm, SubmitHandler, UseFormRegister, FieldError } from "react-hook-form";
+import {
+  useForm,
+  SubmitHandler,
+  UseFormRegister,
+  FieldError,
+} from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -9,24 +14,30 @@ import { toast, Toaster } from "sonner";
 import { FaUser, FaBriefcase, FaStar, FaClock, FaImage } from "react-icons/fa";
 import { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
 import { CREATESKILL } from "@/shared/helpers/endpoints";
-
+import { useRouter } from "next/navigation";
 const skillSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   category: z.string().min(1, "Category is required"),
   proficiency: z.enum(["Beginner", "Intermediate", "Expert"]),
-  yearsOfExperience: z.coerce.number().min(1, "At least 1 year of experience is required"),
+  yearsOfExperience: z.coerce
+    .number()
+    .min(1, "At least 1 year of experience is required"),
   availability: z.enum(["Full-time", "Part-time", "Freelance"]),
   username: z.string().min(1, "Username is required"),
-  image: z.instanceof(File).optional().refine(
-    (file) => !file || file.size <= 5 * 1024 * 1024,
-    "Image must be 5MB or less"
-  ),
+  image: z
+    .instanceof(File)
+    .optional()
+    .refine(
+      (file) => !file || file.size <= 5 * 1024 * 1024,
+      "Image must be 5MB or less"
+    ),
 });
 
 type SkillFormData = z.infer<typeof skillSchema>;
 
 const AddSkillPage: React.FC = () => {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,14 +64,16 @@ const AddSkillPage: React.FC = () => {
     });
 
     // Retrieve email from localStorage
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const email = userData.email || '';
-    formData.append('email', email);
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const email = userData.email || "";
+    formData.append("email", email);
 
     try {
       await axiosInstanceMultipart.post(CREATESKILL, formData);
       toast.success("Skill added successfully!");
-      // Handle success (e.g., reset form, redirect)
+      setTimeout(() => {
+        router.push("/service/skill");
+      }, 1000);
     } catch (error) {
       console.error("Error adding skill:", error);
       toast.error("Failed to add skill. Please try again.");
@@ -165,7 +178,10 @@ const AddSkillPage: React.FC = () => {
                 icon={<FaUser className="text-cyan-400" />}
               />
               <div className="space-y-2">
-                <label htmlFor="image" className=" text-sm font-medium flex items-center">
+                <label
+                  htmlFor="image"
+                  className=" text-sm font-medium flex items-center"
+                >
                   <FaImage className="text-cyan-400 mr-2" />
                   Profile Image
                 </label>
@@ -226,11 +242,17 @@ const AddSkillPage: React.FC = () => {
                 {...register("description")}
                 rows={4}
                 className={`w-full px-3 py-2 bg-gray-700 rounded-md focus:ring-2 focus:ring-cyan-400 text-gray-100 transition-all duration-300 ${
-                  errors.description ? "border-red-500" : dirtyFields.description ? "border-green-500" : ""
+                  errors.description
+                    ? "border-red-500"
+                    : dirtyFields.description
+                    ? "border-green-500"
+                    : ""
                 }`}
               ></textarea>
               {errors.description && (
-                <p className="text-red-400 text-xs">{errors.description.message}</p>
+                <p className="text-red-400 text-xs">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
