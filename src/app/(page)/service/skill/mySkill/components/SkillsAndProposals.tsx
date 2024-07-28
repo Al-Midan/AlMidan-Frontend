@@ -177,7 +177,7 @@ const SkillsAndProposals: React.FC = () => {
         <span>Experience: {skill.yearsOfExperience} years</span>
         <span>Status: {skill.status}</span>
       </div>
-      <Link href={`/skills/edit/${skill._id}`}>
+      <Link href={`/service/skill/mySkill/${skill._id}`}>
         <button className="w-full bg-indigo-700 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
           Edit Skill
         </button>
