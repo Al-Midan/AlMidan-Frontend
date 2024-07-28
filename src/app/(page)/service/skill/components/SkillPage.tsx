@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axiosInstance, { axiosInstanceMultipart } from "@/shared/helpers/axiosInstance";
+import axiosInstance, {
+  axiosInstanceMultipart,
+} from "@/shared/helpers/axiosInstance";
 import { GETSKILLS, SENDSKILLPROPOSAL } from "@/shared/helpers/endpoints";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 
 interface Skill {
   _id: string;
@@ -25,7 +27,6 @@ const SkillPage: React.FC = () => {
   const [visibleSkills, setVisibleSkills] = useState<number>(6);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     setUserEmail(userData.email);
@@ -50,6 +51,11 @@ const SkillPage: React.FC = () => {
     proposalData: { description: string; image: File }
   ) => {
     const formData = new FormData();
+
+    if (userEmail) {
+      formData.append("email", userEmail);
+    }
+
     formData.append("skillId", skill._id);
     formData.append("description", proposalData.description);
     formData.append("image", proposalData.image);
@@ -73,7 +79,17 @@ const SkillPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative">
+        <div className="absolute top-0 right-0">
+          <Button
+            onClick={() => {/* Add navigation logic here */}}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600"
+          >
+            My Skills & Proposals
+          </Button>
+        </div>
+        
+        <Toaster />
         <h1 className="text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
           Discover Amazing Skills
         </h1>
@@ -158,12 +174,7 @@ const SkillCard: React.FC<{
             <span className="text-cyan-400 font-semibold">Your Post</span>
           ) : (
             <Button
-              onClick={() =>
-                onSendProposal(skill, {
-                  description: "",
-                  image: new File([], ""),
-                })
-              }
+              onClick={() => onViewMore(skill)}
               className="bg-gradient-to-r from-cyan-500 to-blue-600"
             >
               Send Proposal
@@ -187,7 +198,10 @@ const Modal: React.FC<{
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ description?: string; image?: string }>({});
+  const [errors, setErrors] = useState<{
+    description?: string;
+    image?: string;
+  }>({});
   const isUserPost = skill.email === userEmail;
 
   const validateForm = () => {
@@ -243,16 +257,20 @@ const Modal: React.FC<{
         <p className="text-gray-300 mb-4">{skill.description}</p>
         <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
           <div>
-            <strong className="text-cyan-400">Category:</strong> {skill.category}
+            <strong className="text-cyan-400">Category:</strong>{" "}
+            {skill.category}
           </div>
           <div>
-            <strong className="text-cyan-400">Proficiency:</strong> {skill.proficiency}
+            <strong className="text-cyan-400">Proficiency:</strong>{" "}
+            {skill.proficiency}
           </div>
           <div>
-            <strong className="text-cyan-400">Experience:</strong> {skill.yearsOfExperience} years
+            <strong className="text-cyan-400">Experience:</strong>{" "}
+            {skill.yearsOfExperience} years
           </div>
           <div>
-            <strong className="text-cyan-400">Availability:</strong> {skill.availability}
+            <strong className="text-cyan-400">Availability:</strong>{" "}
+            {skill.availability}
           </div>
         </div>
         {!isUserPost && (
@@ -263,13 +281,15 @@ const Modal: React.FC<{
               </label>
               <textarea
                 className={`w-full p-2 rounded-lg bg-gray-800 text-white border ${
-                  errors.description ? 'border-red-500' : 'border-cyan-500'
+                  errors.description ? "border-red-500" : "border-cyan-500"
                 } focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
               {errors.description && (
-                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
               )}
             </div>
             <div className="mb-4">
@@ -277,7 +297,7 @@ const Modal: React.FC<{
               <input
                 type="file"
                 className={`w-full p-2 rounded-lg bg-gray-800 text-white border ${
-                  errors.image ? 'border-red-500' : 'border-cyan-500'
+                  errors.image ? "border-red-500" : "border-cyan-500"
                 } focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 onChange={handleImageChange}
                 accept="image/*"
@@ -287,13 +307,26 @@ const Modal: React.FC<{
               )}
               {previewImage && (
                 <div className="mt-2 relative">
-                  <img src={previewImage} alt="Preview" className="max-w-full h-40 object-cover rounded-lg" />
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="max-w-full h-40 object-cover rounded-lg"
+                  />
                   <button
                     onClick={removeImage}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                 </div>
