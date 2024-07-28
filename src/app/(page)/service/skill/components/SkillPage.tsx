@@ -6,7 +6,7 @@ import axiosInstance, {
 } from "@/shared/helpers/axiosInstance";
 import { GETSKILLS, SENDSKILLPROPOSAL } from "@/shared/helpers/endpoints";
 import { toast, Toaster } from "sonner";
-
+import { useRouter } from "next/navigation";
 interface Skill {
   _id: string;
   title: string;
@@ -23,6 +23,7 @@ interface Skill {
 }
 
 const SkillPage: React.FC = () => {
+  const router =useRouter()
   const [skills, setSkills] = useState<Skill[]>([]);
   const [visibleSkills, setVisibleSkills] = useState<number>(6);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
@@ -82,7 +83,7 @@ const SkillPage: React.FC = () => {
       <div className="max-w-7xl mx-auto relative">
         <div className="absolute top-0 right-0">
           <Button
-            onClick={() => {/* Add navigation logic here */}}
+            onClick={() => {router.push('/service/skill/mySkill')}}
             className="bg-gradient-to-r from-cyan-500 to-blue-600"
           >
             My Skills & Proposals
