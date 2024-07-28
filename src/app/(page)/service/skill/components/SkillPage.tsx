@@ -23,13 +23,16 @@ interface Skill {
 }
 
 const SkillPage: React.FC = () => {
-  const router =useRouter()
+  const router = useRouter();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [visibleSkills, setVisibleSkills] = useState<number>(6);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    setUserId(userData._id);
     setUserEmail(userData.email);
     fetchSkills();
   }, []);
@@ -56,7 +59,9 @@ const SkillPage: React.FC = () => {
     if (userEmail) {
       formData.append("email", userEmail);
     }
-
+    if (userId) {
+      formData.append("userId", userId);
+    }
     formData.append("skillId", skill._id);
     formData.append("description", proposalData.description);
     formData.append("image", proposalData.image);
@@ -83,13 +88,15 @@ const SkillPage: React.FC = () => {
       <div className="max-w-7xl mx-auto relative">
         <div className="absolute top-0 right-0">
           <Button
-            onClick={() => {router.push('/service/skill/mySkill')}}
+            onClick={() => {
+              router.push("/service/skill/mySkill");
+            }}
             className="bg-gradient-to-r from-cyan-500 to-blue-600"
           >
             My Skills & Proposals
           </Button>
         </div>
-        
+
         <Toaster />
         <h1 className="text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
           Discover Amazing Skills
