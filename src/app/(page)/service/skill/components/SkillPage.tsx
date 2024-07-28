@@ -56,12 +56,11 @@ const SkillPage: React.FC = () => {
   ) => {
     const formData = new FormData();
 
-    if (userEmail) {
-      formData.append("email", userEmail);
-    }
     if (userId) {
       formData.append("userId", userId);
     }
+    formData.append("email", skill.email);
+
     formData.append("skillId", skill._id);
     formData.append("description", proposalData.description);
     formData.append("image", proposalData.image);

@@ -100,11 +100,17 @@ const SkillsAndProposals: React.FC = () => {
 
   const fetchSentProposals = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(
-        `${GetAllSkillProposals}/${userId}`
-      );
-      if (res.data.response) {
-        setSentProposals(res.data.response);
+      const res = await axiosInstance.get<{
+        message: string;
+        response: {
+          dbValues: SkillProposal[];
+          jobDocuments: Skill[];
+        };
+      }>(`${GetAllSkillProposals}/${userId}`);
+      console.log("fetchSentProposals", res);
+
+      if (res.data.response && res.data.response.dbValues) {
+        setSentProposals(res.data.response.dbValues);
       } else {
         setSentProposals([]);
       }
@@ -121,11 +127,17 @@ const SkillsAndProposals: React.FC = () => {
 
   const fetchReceivedProposals = async (userId: string) => {
     try {
-      const res = await axiosInstance.get<{ response: SkillProposal[] | null }>(
-        `${GETSKILLREQUESTS}/${userId}`
-      );
-      if (res.data.response) {
-        setReceivedProposals(res.data.response);
+      const res = await axiosInstance.get<{
+        message: string;
+        response: {
+          dbValues: SkillProposal[];
+          jobDocuments: Skill[];
+        };
+      }>(`${GETSKILLREQUESTS}/${userId}`);
+      console.log("fetchReceivedProposals", res);
+
+      if (res.data.response && res.data.response.dbValues) {
+        setReceivedProposals(res.data.response.dbValues);
       } else {
         setReceivedProposals([]);
       }
