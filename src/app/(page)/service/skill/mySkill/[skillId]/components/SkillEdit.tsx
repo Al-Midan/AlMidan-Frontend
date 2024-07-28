@@ -34,7 +34,7 @@ interface ValidationErrors {
 const SkillEdit: React.FC = () => {
   const { skillId } = useParams();
   const router = useRouter();
-  
+
   const [skill, setSkill] = useState<Skill>({
     title: "",
     description: "",
@@ -51,7 +51,9 @@ const SkillEdit: React.FC = () => {
   useEffect(() => {
     const fetchSkill = async () => {
       try {
-        const response = await axiosInstance.get(`${SKILLDETAILSWITHID}/${skillId}`);
+        const response = await axiosInstance.get(
+          `${SKILLDETAILSWITHID}/${skillId}`
+        );
         setSkill(response.data.response);
       } catch (error) {
         toast.error("Failed to fetch skill details");
@@ -60,10 +62,14 @@ const SkillEdit: React.FC = () => {
     fetchSkill();
   }, [skillId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setSkill((prev) => ({ ...prev, [name]: value === "" ? null : value }));
-    
+
     if (errors[name as keyof ValidationErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -71,15 +77,25 @@ const SkillEdit: React.FC = () => {
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
-  
-    if (!skill.title || skill.title.trim() === "") newErrors.title = "Title is required";
-    if (!skill.description || skill.description.trim() === "") newErrors.description = "Description is required";
-    if (!skill.category || skill.category.trim() === "") newErrors.category = "Category is required";
+
+    if (!skill.title || skill.title.trim() === "")
+      newErrors.title = "Title is required";
+    if (!skill.description || skill.description.trim() === "")
+      newErrors.description = "Description is required";
+    if (!skill.category || skill.category.trim() === "")
+      newErrors.category = "Category is required";
     if (!skill.proficiency) newErrors.proficiency = "Proficiency is required";
-    if (skill.yearsOfExperience === null || skill.yearsOfExperience === undefined || skill.yearsOfExperience < 0) newErrors.yearsOfExperience = "Years of experience must be a non-negative number";
-    if (!skill.availability || skill.availability.trim() === "") newErrors.availability = "Availability is required";
+    if (
+      skill.yearsOfExperience === null ||
+      skill.yearsOfExperience === undefined ||
+      skill.yearsOfExperience < 0
+    )
+      newErrors.yearsOfExperience =
+        "Years of experience must be a non-negative number";
+    if (!skill.availability || skill.availability.trim() === "")
+      newErrors.availability = "Availability is required";
     if (!skill.status) newErrors.status = "Status is required";
-  
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -101,7 +117,7 @@ const SkillEdit: React.FC = () => {
 
   const inputClassName = (fieldName: keyof ValidationErrors) => `
     w-full bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-300
-    ${errors[fieldName] ? 'border-2 border-red-500' : ''}
+    ${errors[fieldName] ? "border-2 border-red-500" : ""}
   `;
 
   return (
@@ -123,103 +139,141 @@ const SkillEdit: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Title</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Title
+              </label>
               <input
                 type="text"
                 name="title"
                 value={skill.title}
                 onChange={handleInputChange}
-                className={inputClassName('title')}
+                className={inputClassName("title")}
               />
-              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Category</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Category
+              </label>
               <input
                 type="text"
                 name="category"
                 value={skill.category}
                 onChange={handleInputChange}
-                className={inputClassName('category')}
+                className={inputClassName("category")}
               />
-              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+              {errors.category && (
+                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+              )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-blue-300 mb-2">Description</label>
+            <label className="block text-sm font-medium text-blue-300 mb-2">
+              Description
+            </label>
             <textarea
               name="description"
               value={skill.description}
               onChange={handleInputChange}
-              className={`${inputClassName('description')} h-32`}
+              className={`${inputClassName("description")} h-32`}
             />
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Proficiency</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Proficiency
+              </label>
               <select
                 name="proficiency"
                 value={skill.proficiency}
                 onChange={handleInputChange}
-                className={inputClassName('proficiency')}
+                className={inputClassName("proficiency")}
               >
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
                 <option value="Expert">Expert</option>
               </select>
-              {errors.proficiency && <p className="text-red-500 text-sm mt-1">{errors.proficiency}</p>}
+              {errors.proficiency && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.proficiency}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Years of Experience</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Years of Experience
+              </label>
               <input
                 type="number"
                 name="yearsOfExperience"
                 value={skill.yearsOfExperience}
                 onChange={handleInputChange}
-                className={inputClassName('yearsOfExperience')}
+                className={inputClassName("yearsOfExperience")}
               />
-              {errors.yearsOfExperience && <p className="text-red-500 text-sm mt-1">{errors.yearsOfExperience}</p>}
+              {errors.yearsOfExperience && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.yearsOfExperience}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Availability</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Availability
+              </label>
               <input
                 type="text"
                 name="availability"
                 value={skill.availability}
                 onChange={handleInputChange}
-                className={inputClassName('availability')}
+                className={inputClassName("availability")}
               />
-              {errors.availability && <p className="text-red-500 text-sm mt-1">{errors.availability}</p>}
+              {errors.availability && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.availability}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Status</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Status
+              </label>
               <select
                 name="status"
                 value={skill.status}
                 onChange={handleInputChange}
-                className={inputClassName('status')}
+                className={inputClassName("status")}
               >
                 <option value="Open">Open</option>
                 <option value="Close">Close</option>
               </select>
-              {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
+              {errors.status && (
+                <p className="text-red-500 text-sm mt-1">{errors.status}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-300 mb-2">Image URL</label>
+              <label className="block text-sm font-medium text-blue-300 mb-2">
+                Image URL
+              </label>
               <input
                 type="text"
                 name="image"
                 value={skill.image}
                 onChange={handleInputChange}
-                className={inputClassName('image')}
+                className={inputClassName("image")}
               />
-              {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+              {errors.image && (
+                <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+              )}
             </div>
           </div>
 
