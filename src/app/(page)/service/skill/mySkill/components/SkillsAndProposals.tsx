@@ -58,7 +58,7 @@ const SkillsAndProposals: React.FC = () => {
       const userDetails = localStorage.getItem("userData");
       const user = userDetails ? JSON.parse(userDetails) : {};
       const userId = user._id;
-
+    
       if (userId) {
         await fetchSkills(userId);
         await fetchSentProposals(userId);

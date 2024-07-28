@@ -35,6 +35,7 @@ export const GETALLADMINJOB = "/freelance-service/getAllAdminJob";
 export const JOBBLOCK = "/freelance-service/jobBlock";
 export const SENDPROPOSAL = "/freelance-service/sendProposal";
 export const GETOURJOBPOST = "/freelance-service/getUserJobs";
+export const GETOURSKILLS = "/freelance-service/getUserSkills";
 export const GetAllProposals = "/freelance-service/getAllProposals";
 export const GETJOBREQUESTS = "/freelance-service/getJobRequests";
 export const PROPOSALSTATUS = "/freelance-service/proposalStatus";
