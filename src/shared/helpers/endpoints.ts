@@ -39,6 +39,7 @@ export const GETOURSKILLS = "/freelance-service/getUserSkills";
 export const GetAllProposals = "/freelance-service/getAllProposals";
 export const GetAllSkillProposals = "/freelance-service/getAllSkillProposals";
 export const GETJOBREQUESTS = "/freelance-service/getJobRequests";
+export const GETSKILLREQUESTS = "/freelance-service/getSkillRequests";
 export const PROPOSALSTATUS = "/freelance-service/proposalStatus";
 export const SKILLPROPOSALSTATUS = "/freelance-service/skillProposalStatus";
 export const JOBDETAILSWITHID = "/freelance-service/jobDetailsWithId";
