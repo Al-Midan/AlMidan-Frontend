@@ -39,10 +39,9 @@ const HomePage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [filter, setFilter] = useState<"all" | "courses" | "jobs" | "skills">(
-    "all"
-  );
   const [showContent, setShowContent] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,25 +64,19 @@ const HomePage = () => {
     fetchData();
   }, []);
 
-  const filteredItems = () => {
-    switch (filter) {
-      case "courses":
-        return courses.map((course) => ({ ...course, type: "course" }));
-      case "jobs":
-        return jobs.map((job) => ({ ...job, type: "job" }));
-      case "skills":
-        return skills.map((skill) => ({ ...skill, type: "skill" }));
-      default:
-        return [
-          ...courses.map((course) => ({ ...course, type: "course" })),
-          ...jobs.map((job) => ({ ...job, type: "job" })),
-          ...skills.map((skill) => ({ ...skill, type: "skill" })),
-        ];
-    }
-  };
+  const allItems = [
+    ...courses.map((course) => ({ ...course, type: "course" })),
+    ...jobs.map((job) => ({ ...job, type: "job" })),
+    ...skills.map((skill) => ({ ...skill, type: "skill" })),
+  ];
+
+  const totalPages = Math.ceil(allItems.length / itemsPerPage);
+  const paginatedItems = allItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleCardClick = (item: any) => {
-    console.log("Card clicked:", item);
     switch (item.type) {
       case "course":
         router.push(`/course/${item._id}`);
@@ -97,12 +90,11 @@ const HomePage = () => {
     }
   };
 
-  const handleFilterClick = (
-    newFilter: "all" | "courses" | "jobs" | "skills"
-  ) => {
-    console.log("Filter clicked:", newFilter);
-    setFilter(newFilter);
-  };
+  const handlePageChange = (page: number) => {
+  console.log("Page changed to:", page);
+  setCurrentPage(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black-100 text-white">
@@ -140,61 +132,73 @@ const HomePage = () => {
           Explore Al-Midan
         </h1>
 
-        <div className="flex justify-center space-x-4 mb-8">
-          {["all", "courses", "jobs", "skills"].map((f) => (
-            <button
-              key={f}
-              onClick={() => {
-                console.log("Button clicked:", f);
-                handleFilterClick(f as "all" | "courses" | "jobs" | "skills");
-              }}
-              className={`px-4 py-2 rounded-full transition-colors duration-200 hover:bg-opacity-80 ${
-                filter === f ? "bg-blue-500" : "bg-gray-700"
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          >
+            {paginatedItems.map((item: any) => (
+              <motion.div
+                key={item._id}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleCardClick(item)}
+                className="bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl hover:bg-gray-700"
+              >
+                <div className="w-full h-36 relative">
+                  <Image
+                    src={item.image || item.courseImage}
+                    alt={item.title || item.courseName}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </div>
+                <div className="p-3">
+                  <h2 className="text-lg font-semibold mb-1">
+                    {item.title || item.courseName}
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-2 line-clamp-2">
+                    {item.description || item.courseDescription}
+                  </p>
+                  {item.type === "course" && (
+                    <p className="text-green-400 font-bold text-sm">
+                      ${item.coursePrice}
+                    </p>
+                  )}
+                  {item.type === "job" && (
+                    <p className="text-green-400 font-bold text-sm">
+                      Budget: ${item.budget}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems().map((item: any) => (
-            <motion.div
-              key={item._id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCardClick(item)}
-              className="bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl hover:bg-gray-700"
-            >
-              <div className="w-full h-36 relative">
-                <Image
-                  src={item.image || item.courseImage}
-                  alt={item.title || item.courseName}
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-              <div className="p-3">
-                <h2 className="text-lg font-semibold mb-1">
-                  {item.title || item.courseName}
-                </h2>
-                <p className="text-gray-400 text-sm mb-2 line-clamp-2">
-                  {item.description || item.courseDescription}
-                </p>
-                {item.type === "course" && (
-                  <p className="text-green-400 font-bold text-sm">
-                    ${item.coursePrice}
-                  </p>
-                )}
-                {item.type === "job" && (
-                  <p className="text-green-400 font-bold text-sm">
-                    Budget: ${item.budget}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <motion.button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`mx-1 px-3 py-1 rounded ${
+                  currentPage === page
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-700 text-gray-300"
+                }`}
+              >
+                {page}
+              </motion.button>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );
