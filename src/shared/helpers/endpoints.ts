@@ -53,3 +53,5 @@ export const SENDSKILLPROPOSAL = "/freelance-service/skillProposal";
 export const GETADMINSKILLS = "/freelance-service/getAdminSkill";
 export const TOGGLESKILLBLOCK = "/freelance-service/skillBlock";
 export const DELETESKILL = "/freelance-service/deleteSkill";
+export const GETUSERMESSAGE = "/freelance-service/userProposalMessage";
+export const GETSELECTEDMESSAGE = "/freelance-service/getSelectedMessage";
