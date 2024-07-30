@@ -57,3 +57,4 @@ export const GETUSERMESSAGE = "/freelance-service/userProposalMessage";
 export const GETSELECTEDMESSAGE = "/freelance-service/getSelectedMessage";
 export const INSERTMESSAGE = "/freelance-service/insertMessage";
 export const MESSAGEUPDATE = "/freelance-service/updateMessage";
+export const SKILLPAYMENT = "/freelance-service/skillPayment";
