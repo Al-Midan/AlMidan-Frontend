@@ -5,10 +5,13 @@ import {
   GETSELECTEDMESSAGE,
   GETUSERMESSAGE,
   INSERTMESSAGE,
+  MESSAGEUPDATE,
 } from "@/shared/helpers/endpoints";
 import { io, Socket } from "socket.io-client";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import useRazorpay from "@/shared/hooks/useRazorpay";
+import { toast, Toaster } from "sonner";
 
 interface User {
   _id: string;
@@ -17,6 +20,7 @@ interface User {
 }
 
 interface Message {
+  _id: string;
   sender: string;
   receiver: string;
   content: string;
@@ -29,10 +33,12 @@ const ChatPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [offerAmount, setOfferAmount] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isRazorpayLoaded = useRazorpay();
 
   useEffect(() => {
     const ownerEmail = JSON.parse(
@@ -83,7 +89,7 @@ const ChatPage: React.FC = () => {
             message.receiver === selectedUser.email)
         ) {
           setMessages((prevMessages) => {
-            if (!prevMessages.some(m => m.timestamp === message.timestamp)) {
+            if (!prevMessages.some(m => m._id === message._id)) {
               return [...prevMessages, message];
             }
             return prevMessages;
@@ -109,20 +115,26 @@ const ChatPage: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedUser || !newMessage.trim() || !currentUser) return;
+    if (!selectedUser || (!newMessage.trim() && !offerAmount) || !currentUser) return;
+
+    let content = newMessage;
+    if (offerAmount) {
+      content = `OFFER:${offerAmount}:${newMessage}`;
+    }
 
     const message = {
       sender: currentUser,
       receiver: selectedUser.email,
-      content: newMessage,
+      content: content,
       timestamp: new Date(),
     };
 
     try {
-      await axiosInstance.post(INSERTMESSAGE, message);
-      setMessages((prevMessages) => [...prevMessages, message]);
+      const response = await axiosInstance.post(INSERTMESSAGE, message);
+      setMessages((prevMessages) => [...prevMessages, response.data.message]);
       setNewMessage("");
-      socket?.emit("new_message", message);
+      setOfferAmount("");
+      socket?.emit("new_message", response.data.message);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -134,8 +146,115 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleOfferResponse = async (message: Message, status: 'accepted' | 'rejected') => {
+    try {
+      const updatedMessage = { ...message, content: `${message.content}:${status.toUpperCase()}` };
+      const response = await axiosInstance.post(`${MESSAGEUPDATE}`, updatedMessage);
+      setMessages((prevMessages) =>
+        prevMessages.map((m) =>
+          m._id === message._id ? response.data.message : m
+        )
+      );
+      socket?.emit("offer_response", response.data.message);
+
+      if (status === 'accepted') {
+        initiatePayment(message);
+      }
+    } catch (error) {
+      console.error("Error updating offer status:", error);
+    }
+  };
+
+  const initiatePayment = (message: Message) => {
+    if (!isRazorpayLoaded) {
+      console.error("Razorpay SDK is not loaded yet");
+      return;
+    }
+
+    const offerAmount = parseFloat(message.content.split(':')[1]);
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: offerAmount * 100, // Razorpay expects amount in paise
+      currency: "INR",
+      name: "AlMidan",
+      description: "Payment for accepted offer",
+      handler: async (response: any) => {
+        try {
+          await axiosInstance.post('/api/save-transaction', {
+            sender: message.sender,
+            receiver: message.receiver,
+            amount: offerAmount,
+            paymentId: response.razorpay_payment_id,
+            timestamp: new Date(),
+          });
+          toast.success("Payment successful!");
+        } catch (error) {
+          console.error("Error saving transaction:", error);
+          toast.error("Error processing payment");
+        }
+      },
+      prefill: {
+        email: currentUser,
+      },
+    };
+
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
+  };
+
+  const renderMessage = (message: Message) => {
+    const isOffer = message.content.startsWith('OFFER:');
+    const [, amount, text, status] = isOffer ? message.content.split(':') : [];
+    const isCurrentUserSender = message.sender === currentUser;
+
+    return (
+      <div
+        className={`mb-4 ${
+          isCurrentUserSender ? "text-right" : "text-left"
+        }`}
+      >
+        <div
+          className={cn(
+            "inline-block p-2 rounded-lg",
+            isCurrentUserSender ? "bg-purple-600" : "bg-gray-700"
+          )}
+        >
+          {isOffer ? (
+            <>
+              <p>Offer: ${amount}</p>
+              <p>{text}</p>
+              {status && <p className="text-sm italic">Status: {status}</p>}
+              {!status && !isCurrentUserSender && (
+                <div className="mt-2">
+                  <button
+                    onClick={() => handleOfferResponse(message, 'accepted')}
+                    className="bg-green-500 text-white px-2 py-1 rounded mr-2"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleOfferResponse(message, 'rejected')}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            message.content
+          )}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white">
+      <Toaster />
       {/* Users list */}
       <div className="w-1/4 bg-gradient-to-b from-gray-900 to-black p-4 overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-purple-400">Chats</h2>
@@ -185,22 +304,6 @@ const ChatPage: React.FC = () => {
                 />
                 <span className="font-bold text-purple-400">{selectedUser.username}</span>
               </div>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-all duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef}>
               {loading ? (
@@ -209,30 +312,8 @@ const ChatPage: React.FC = () => {
                 </div>
               ) : messages.length > 0 ? (
                 messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`mb-4 ${
-                      message.sender ===
-                      JSON.parse(localStorage.getItem("userData") || "{}").email
-                        ? "text-right"
-                        : "text-left"
-                    }`}
-                  >
-                    <div
-                      className={cn(
-                        "inline-block p-2 rounded-lg",
-                        message.sender ===
-                        JSON.parse(localStorage.getItem("userData") || "{}")
-                          .email
-                          ? "bg-purple-600"
-                          : "bg-gray-700"
-                      )}
-                    >
-                      {message.content}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </div>
+                  <div key={index}>
+                    {renderMessage(message)}
                   </div>
                 ))
               ) : (
@@ -243,21 +324,30 @@ const ChatPage: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
             <div className="bg-gradient-to-r from-gray-900 to-black p-4">
-              <div className="flex">
+              <div className="flex flex-col space-y-2">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="flex-1 bg-gray-800 text-white px-4 py-2 rounded-l focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="flex-1 bg-gray-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-600"
                   placeholder="Type a message..."
                 />
-                <button
-                  onClick={handleSendMessage}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-r transition-all duration-200"
-                >
-                  Send
-                </button>
+                <div className="flex space-x-2">
+                  <input
+                    type="number"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                    className="flex-1 bg-gray-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="Enter offer amount"
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-all duration-200"
+                  >
+                    {offerAmount ? 'Send Offer' : 'Send'}
+                  </button>
+                </div>
               </div>
             </div>
           </>
