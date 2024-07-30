@@ -24,6 +24,7 @@ export default function NavbarWrapper() {
     { name: "Skill", link: "/service/skill" },
     { name: "Profile", link: "/profile" },
     { name: "Complaints", link: "/complaints" },
+    { name: "Chat", link: "/chat" },
     { name: "LogOut", link: "/login" },
   ];
 

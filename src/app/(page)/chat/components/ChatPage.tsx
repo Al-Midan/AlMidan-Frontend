@@ -1,113 +1,159 @@
-"use client"
-import { useState, useEffect, useRef } from 'react'
-import axiosInstance from '@/shared/helpers/axiosInstance'
-import { GETSELECTEDMESSAGE, GETUSERMESSAGE, INSERTMESSAGE } from '@/shared/helpers/endpoints'
-import { io, Socket } from 'socket.io-client'
-import Image from 'next/image'
+"use client";
+import { useState, useEffect, useRef, KeyboardEvent } from "react";
+import axiosInstance from "@/shared/helpers/axiosInstance";
+import {
+  GETSELECTEDMESSAGE,
+  GETUSERMESSAGE,
+  INSERTMESSAGE,
+} from "@/shared/helpers/endpoints";
+import { io, Socket } from "socket.io-client";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface User {
-  _id: string
-  username: string
-  email: string
+  _id: string;
+  username: string;
+  email: string;
 }
 
 interface Message {
-  sender: string
-  receiver: string
-  content: string
-  timestamp: Date
+  sender: string;
+  receiver: string;
+  content: string;
+  timestamp: Date;
 }
 
 const ChatPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([])
-  const [currentUser, setcurrentUser] = useState<string | null>()
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [socket, setSocket] = useState<Socket | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const ownerEmail = JSON.parse(localStorage.getItem('userData') || '{}').email
+    const ownerEmail = JSON.parse(
+      localStorage.getItem("userData") || "{}"
+    ).email;
     const fetchAcceptedProposals = async () => {
       try {
-        const response = await axiosInstance.get(`${GETUSERMESSAGE}?ownerEmail=${ownerEmail}`)
-        setUsers(response.data.response.receiverDetails)
-        setcurrentUser(response.data.response.senderEmail)
+        const response = await axiosInstance.get(
+          `${GETUSERMESSAGE}?ownerEmail=${ownerEmail}`
+        );
+        setUsers(response.data.response.receiverDetails);
+        setCurrentUser(response.data.response.senderEmail);
       } catch (error) {
-        console.error('Error fetching users:', error)
+        console.error("Error fetching users:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchAcceptedProposals()
+    fetchAcceptedProposals();
 
-    const newSocket = io('http://localhost:3001') 
-    setSocket(newSocket)
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5004';
+    const newSocket = io(socketUrl, {
+      transports: ["websocket", "polling"],
+    });
+
+    newSocket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket.IO connection error:", error);
+    });
+
+    setSocket(newSocket);
 
     return () => {
-      newSocket.disconnect()
-    }
-  }, [])
+      newSocket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    if (socket) {
+      socket.on("new_message", (message: Message) => {
+        if (
+          selectedUser &&
+          (message.sender === selectedUser.email ||
+            message.receiver === selectedUser.email)
+        ) {
+          setMessages((prevMessages) => {
+            if (!prevMessages.some(m => m.timestamp === message.timestamp)) {
+              return [...prevMessages, message];
+            }
+            return prevMessages;
+          });
+        }
+      });
     }
-  }, [messages])
+  }, [socket, selectedUser]);
 
   const handleUserSelect = async (user: User) => {
-    setSelectedUser(user)
-    setLoading(true)
+    setSelectedUser(user);
+    setLoading(true);
     try {
-      const response = await axiosInstance.get(`${GETSELECTEDMESSAGE}?sender=${currentUser}&receiver=${user.email}`)
-      setMessages(response.data.response)
+      const response = await axiosInstance.get(
+        `${GETSELECTEDMESSAGE}?sender=${currentUser}&receiver=${user.email}`
+      );
+      setMessages(response.data.response);
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      console.error("Error fetching messages:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSendMessage = async () => {
-    if (!selectedUser || !newMessage.trim()) return
+    if (!selectedUser || !newMessage.trim() || !currentUser) return;
 
     const message = {
-      sender: currentUser!,
+      sender: currentUser,
       receiver: selectedUser.email,
       content: newMessage,
       timestamp: new Date(),
-    }
+    };
 
     try {
-      await axiosInstance.post(INSERTMESSAGE, message)
-      setMessages([...messages, message])
-      setNewMessage('')
-      socket?.emit('new_message', message)
+      await axiosInstance.post(INSERTMESSAGE, message);
+      setMessages((prevMessages) => [...prevMessages, message]);
+      setNewMessage("");
+      socket?.emit("new_message", message);
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error("Error sending message:", error);
     }
-  }
+  };
+
+  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSendMessage();
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white">
       {/* Users list */}
-      <div className="w-1/4 bg-gray-800 p-4 overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">Chats</h2>
+      <div className="w-1/4 bg-gradient-to-b from-gray-900 to-black p-4 overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4 text-purple-400">Chats</h2>
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : (
           <ul>
             {users.map((user) => (
               <li
                 key={user._id}
-                className={`flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded ${
-                  selectedUser?._id === user._id ? 'bg-gray-700' : ''
-                }`}
+                className={cn(
+                  "flex items-center p-2 cursor-pointer rounded transition-all duration-200",
+                  selectedUser?._id === user._id
+                    ? "bg-gradient-to-r from-purple-900 to-gray-900"
+                    : "hover:bg-gray-800"
+                )}
                 onClick={() => handleUserSelect(user)}
               >
                 <Image
@@ -117,7 +163,7 @@ const ChatPage: React.FC = () => {
                   height={40}
                   className="rounded-full mr-2"
                 />
-                <span>{user.username}</span>
+                <span className="text-purple-300">{user.username}</span>
               </li>
             ))}
           </ul>
@@ -125,10 +171,10 @@ const ChatPage: React.FC = () => {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-900 to-black">
         {selectedUser ? (
           <>
-            <div className="bg-gray-800 p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-gray-900 to-black p-4 flex items-center justify-between">
               <div className="flex items-center">
                 <Image
                   src={`https://api.dicebear.com/6.x/initials/svg?seed=${selectedUser.username}`}
@@ -137,40 +183,55 @@ const ChatPage: React.FC = () => {
                   height={40}
                   className="rounded-full mr-2"
                 />
-                <span className="font-bold">{selectedUser.username}</span>
+                <span className="font-bold text-purple-400">{selectedUser.username}</span>
               </div>
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-all duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef}>
               {loading ? (
                 <div className="flex justify-center items-center h-full">
-                  <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
                 </div>
               ) : messages.length > 0 ? (
                 messages.map((message, index) => (
                   <div
                     key={index}
                     className={`mb-4 ${
-                      message.sender === JSON.parse(localStorage.getItem('userData') || '{}').email
-                        ? 'text-right'
-                        : 'text-left'
+                      message.sender ===
+                      JSON.parse(localStorage.getItem("userData") || "{}").email
+                        ? "text-right"
+                        : "text-left"
                     }`}
                   >
                     <div
-                      className={`inline-block p-2 rounded-lg ${
-                        message.sender === JSON.parse(localStorage.getItem('userData') || '{}').email
-                          ? 'bg-blue-500'
-                          : 'bg-gray-700'
-                      }`}
+                      className={cn(
+                        "inline-block p-2 rounded-lg",
+                        message.sender ===
+                        JSON.parse(localStorage.getItem("userData") || "{}")
+                          .email
+                          ? "bg-purple-600"
+                          : "bg-gray-700"
+                      )}
                     >
                       {message.content}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString()}
+                      {new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
                   </div>
                 ))
@@ -181,18 +242,19 @@ const ChatPage: React.FC = () => {
               )}
               <div ref={messagesEndRef} />
             </div>
-            <div className="bg-gray-800 p-4">
+            <div className="bg-gradient-to-r from-gray-900 to-black p-4">
               <div className="flex">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-l focus:outline-none"
+                  onKeyPress={handleKeyPress}
+                  className="flex-1 bg-gray-800 text-white px-4 py-2 rounded-l focus:outline-none focus:ring-2 focus:ring-purple-600"
                   placeholder="Type a message..."
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-r transition-all duration-200"
                 >
                   Send
                 </button>
@@ -206,7 +268,7 @@ const ChatPage: React.FC = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ChatPage
+export default ChatPage;

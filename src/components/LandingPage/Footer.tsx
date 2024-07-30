@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="w-full mb-[100px] pb-10 md:mb-5" id="contact">
       <div className="flex flex-col items-center">
-        <h1 className="heading lg:max-w-[50vw]">
+        <h1 className="heading lg:max-w-[50vw] mt-20">
           Find the Perfect Match for Your Project or Showcase{" "}
           <span className="text-purple">Your Skills</span> Globally.
         </h1>
