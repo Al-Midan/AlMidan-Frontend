@@ -55,3 +55,4 @@ export const TOGGLESKILLBLOCK = "/freelance-service/skillBlock";
 export const DELETESKILL = "/freelance-service/deleteSkill";
 export const GETUSERMESSAGE = "/freelance-service/userProposalMessage";
 export const GETSELECTEDMESSAGE = "/freelance-service/getSelectedMessage";
+export const INSERTMESSAGE = "/freelance-service/insertMessage";

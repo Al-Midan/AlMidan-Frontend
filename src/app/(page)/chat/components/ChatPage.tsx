@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
 import axiosInstance from '@/shared/helpers/axiosInstance'
-import { GETSELECTEDMESSAGE, GETUSERMESSAGE } from '@/shared/helpers/endpoints'
+import { GETSELECTEDMESSAGE, GETUSERMESSAGE, INSERTMESSAGE } from '@/shared/helpers/endpoints'
 import { io, Socket } from 'socket.io-client'
 import Image from 'next/image'
 
@@ -75,14 +75,14 @@ const ChatPage: React.FC = () => {
     if (!selectedUser || !newMessage.trim()) return
 
     const message = {
-      sender: currentUser,
+      sender: currentUser!,
       receiver: selectedUser.email,
       content: newMessage,
       timestamp: new Date(),
     }
 
     try {
-      await axiosInstance.post('/api/messages', message)
+      await axiosInstance.post(INSERTMESSAGE, message)
       setMessages([...messages, message])
       setNewMessage('')
       socket?.emit('new_message', message)
