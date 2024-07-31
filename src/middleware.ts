@@ -6,26 +6,32 @@ import axiosInstance from "./shared/helpers/axiosInstance";
 import axios from "axios";
 
 export async function middleware(request: NextRequest) {
-  console.log('Middleware started for path:', request.nextUrl.pathname);
+  console.log("Middleware started for path:", request.nextUrl.pathname);
 
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  console.log('Access token:', accessToken ? 'Present' : 'Not present');
-  console.log('Refresh token:', refreshToken ? 'Present' : 'Not present');
+  console.log("Access token:", accessToken ? "Present" : "Not present");
+  console.log("Refresh token:", refreshToken ? "Present" : "Not present");
 
   const authRoutes = ["/login", "/register"];
   const adminRoutes = [
     "/admin",
     "/admin/Complaint-Management",
     "/admin/Course-Management",
-    "/admin/User-Management"
+    "/admin/User-Management",
   ];
-  const userRoutes = ["/profile", "/home", "/course", "/service", "/complaints"];
+  const userRoutes = [
+    "/profile",
+    "/home",
+    "/course",
+    "/service",
+    "/complaints",
+  ];
 
   // If it's an auth route and there's no access token, allow access
   if (authRoutes.includes(request.nextUrl.pathname) && !accessToken) {
-    console.log('Unauthenticated user accessing auth route, allowing access');
+    console.log("Unauthenticated user accessing auth route, allowing access");
     return NextResponse.next();
   }
 
@@ -35,13 +41,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // If no tokens at all, redirect to login
-  console.log('No tokens present, redirecting to login');
+  console.log("No tokens present, redirecting to login");
   return NextResponse.redirect(new URL("/login", request.url));
 }
 
-async function verifyTokenAndRedirect(request: NextRequest, accessToken: string | undefined, refreshToken: string | undefined) {
+async function verifyTokenAndRedirect(
+  request: NextRequest,
+  accessToken: string | undefined,
+  refreshToken: string | undefined
+) {
   if (accessToken) {
-    console.log('Verifying access token and checking user role');
+    console.log("Verifying access token and checking user role");
     try {
       const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_KEY);
       const { payload } = await jwtVerify(accessToken, secret);
@@ -49,9 +59,8 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
       const response = await axiosInstance.get(USERVALUES, {
         params: { email: (payload as { email: string }).email },
       });
-
       if (response.data.isBlocked) {
-        console.log('User is blocked');
+        console.log("User is blocked");
         const res = NextResponse.redirect(new URL("/login", request.url));
         res.cookies.delete("access_token");
         res.cookies.delete("refresh_token");
@@ -63,17 +72,21 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
 
       if (isAdmin) {
         if (!currentPath.startsWith("/admin")) {
-          console.log('Admin accessing non-admin route, redirecting to admin home');
+          console.log(
+            "Admin accessing non-admin route, redirecting to admin home"
+          );
           return NextResponse.redirect(new URL("/admin", request.url));
         }
       } else {
         if (currentPath.startsWith("/admin")) {
-          console.log('Non-admin user attempting to access admin route, redirecting to user home');
+          console.log(
+            "Non-admin user attempting to access admin route, redirecting to user home"
+          );
           return NextResponse.redirect(new URL("/home", request.url));
         }
       }
 
-      console.log('Access granted');
+      console.log("Access granted");
       return NextResponse.next();
     } catch (error) {
       console.error("Token verification failed:", error);
@@ -84,15 +97,18 @@ async function verifyTokenAndRedirect(request: NextRequest, accessToken: string 
   return handleTokenRefresh(request, refreshToken);
 }
 
-async function handleTokenRefresh(request: NextRequest, refreshToken: string | undefined) {
+async function handleTokenRefresh(
+  request: NextRequest,
+  refreshToken: string | undefined
+) {
   if (refreshToken) {
-    console.log('Attempting to refresh token');
+    console.log("Attempting to refresh token");
     try {
       const response = await axiosInstance.post(REFRESHTOKEN, { refreshToken });
 
       if (response.status === 200) {
         const { accessToken: newAccessToken } = response.data;
-        console.log('Token refreshed successfully');
+        console.log("Token refreshed successfully");
 
         const res = NextResponse.next();
         res.cookies.set("access_token", newAccessToken, {
@@ -109,7 +125,7 @@ async function handleTokenRefresh(request: NextRequest, refreshToken: string | u
       } else {
         console.error("An unexpected error occurred:", refreshError);
       }
-      
+
       // If refresh fails, clear both tokens and redirect to login
       const res = NextResponse.redirect(new URL("/login", request.url));
       res.cookies.delete("access_token");
@@ -118,7 +134,7 @@ async function handleTokenRefresh(request: NextRequest, refreshToken: string | u
     }
   }
 
-  console.log('Authentication failed, redirecting to login');
+  console.log("Authentication failed, redirecting to login");
   return NextResponse.redirect(new URL("/login", request.url));
 }
 

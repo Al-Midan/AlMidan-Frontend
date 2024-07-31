@@ -84,29 +84,27 @@ const ChatPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (socket) {
+    if (socket && currentUser) {
+      socket.emit("user_connected", currentUser);
+
       socket.on("new_message", (newMessage: Message) => {
-        setMessages((prevMessages) => {
-          if (!prevMessages.some((m) => m._id === newMessage._id)) {
-            if (
-              selectedUser &&
-              ((newMessage.sender === currentUser &&
-                newMessage.receiver === selectedUser.email) ||
-                (newMessage.receiver === currentUser &&
-                  newMessage.sender === selectedUser.email))
-            ) {
-              return [...prevMessages, newMessage];
-            }
-          }
-          return prevMessages;
-        });
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      });
+
+      socket.on("offer_update", (updatedMessage: Message) => {
+        setMessages((prevMessages) =>
+          prevMessages.map((m) =>
+            m._id === updatedMessage._id ? updatedMessage : m
+          )
+        );
       });
 
       return () => {
         socket.off("new_message");
+        socket.off("offer_update");
       };
     }
-  }, [socket, selectedUser, currentUser]);
+  }, [socket, currentUser]);
 
   const handleUserSelect = async (user: User) => {
     setSelectedUser(user);
@@ -144,8 +142,10 @@ const ChatPage: React.FC = () => {
       const response = await axiosInstance.post(INSERTMESSAGE, messageToSend);
       const newMessage: Message = response.data.message;
 
+      // Update local state immediately
       setMessages((prevMessages) => [...prevMessages, newMessage]);
 
+      // Emit the new message to the socket
       socket?.emit("new_message", newMessage);
 
       setNewMessage("");
@@ -176,11 +176,13 @@ const ChatPage: React.FC = () => {
         updatedMessage
       );
       console.log("MESSAGEUPDATE", response);
+
       setMessages((prevMessages) =>
         prevMessages.map((m) =>
           m._id === message._id ? response.data.message : m
         )
       );
+
       socket?.emit("offer_response", response.data.message);
 
       if (status === "accepted") {
@@ -246,34 +248,38 @@ const ChatPage: React.FC = () => {
       >
         <div
           className={cn(
-            "inline-block p-2 rounded-lg",
+            "inline-block p-3 rounded-lg",
             isCurrentUserSender ? "bg-purple-600" : "bg-gray-700"
           )}
         >
           {isOffer ? (
-            <>
-              <p>Offer: ${amount}</p>
-              <p>{text}</p>
-              {status && <p className="text-sm italic">Status: {status}</p>}
+            <div className="offer-container">
+              <p className="text-lg font-semibold">Offer: ${amount}</p>
+              <p className="text-sm mt-1">{text}</p>
+              {status && (
+                <p className="text-sm italic mt-2">
+                  Status: <span className="font-bold">{status}</span>
+                </p>
+              )}
               {!status && !isCurrentUserSender && (
-                <div className="mt-2">
+                <div className="mt-3 flex justify-center space-x-2">
                   <button
                     onClick={() => handleOfferResponse(message, "accepted")}
-                    className="bg-green-500 text-white px-2 py-1 rounded mr-2"
+                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition-colors duration-200"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleOfferResponse(message, "rejected")}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors duration-200"
                   >
                     Reject
                   </button>
                 </div>
               )}
-            </>
+            </div>
           ) : (
-            message.content
+            <p>{message.content}</p>
           )}
         </div>
         <div className="text-xs text-gray-500 mt-1">

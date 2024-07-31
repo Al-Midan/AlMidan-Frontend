@@ -309,7 +309,7 @@ const SkillsAndProposals: React.FC = () => {
               : "You haven't received any proposals yet."}
           </p>
           {activeSection === "skills" && (
-            <Link href="/skills/create">
+            <Link href="/service/createSkill">
               <button className="bg-indigo-700 text-white px-6 py-3 rounded-full hover:bg-indigo-600 transition-colors duration-300 text-sm">
                 Add a New Skill
               </button>
