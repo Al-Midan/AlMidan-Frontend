@@ -28,12 +28,10 @@ const OtpPage: React.FC<OtpPageProps> = ({ formData }) => {
     }
     try {
       const response = await axiosInstance.post(OTP, otp);
-      console.log("Response from backend:", response);
       if (response.status === 200) {
         setLoading(true);
       }
       // Handle the response from the backend
-      console.log(response.data);
       toast.success(response.data.message, {
         style: { background: "black", color: "white" },
         position: "top-center",
@@ -92,7 +90,6 @@ const OtpPage: React.FC<OtpPageProps> = ({ formData }) => {
         "http://localhost:5000/user-service/register",
         formData
       );
-      console.log("Response from backend:", response);
       toast.dismiss(loadingToastId);
       toast.success(response.data.message, {
         style: { background: "black", color: "white" },

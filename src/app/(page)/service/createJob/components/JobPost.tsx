@@ -136,7 +136,6 @@ const JobPostingForm: React.FC = () => {
   
       const response = await axiosInstanceMultipart.post(CREATEJOB, formDataToSend);
   
-      console.log('Job posted successfully:', response.data);
       setSuccessMessage('Job posted successfully!');
       
       setTimeout(() => {

@@ -72,7 +72,6 @@ const EditProfile: React.FC = () => {
 
     try {
       const response = await axiosInstanceMultipart.post(UPDATEPROFILE, formData);
-      console.log("response.data.response",response.data.response);
       
       if (response.status === 200) {
         setMessage({ text: 'Profile updated successfully!', type: 'success' });

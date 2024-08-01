@@ -37,7 +37,6 @@ const Course = () => {
         const response = await axiosInstance.get(GETCOURSE);
         const Message = response.data.message;
         if (response.status === 200) {
-          console.log("response", response);
           toast.dismiss(loadingToastId);
         const success=  toast.success(Message, {
             style: { background: "black", color: "white" },

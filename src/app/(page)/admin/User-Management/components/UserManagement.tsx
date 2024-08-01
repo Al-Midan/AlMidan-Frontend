@@ -39,7 +39,6 @@ const UserManagement = () => {
           }
         );
 
-        console.log("response", response);
         toast.dismiss(loadingToastId);
         const filteredUsers = response.data.users.filter(
           (user: User) => !user.roles.includes("admin")

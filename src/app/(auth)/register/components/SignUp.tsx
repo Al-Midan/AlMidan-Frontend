@@ -61,7 +61,6 @@ const Register = () => {
     }
 
     // If no errors, proceed with form submission
-    console.log("formValues", formValues);
     setFormData(formValues);
     const loadingToastId = toast.loading("Processing", {
       style: { background: "black", color: "white" },
@@ -70,9 +69,7 @@ const Register = () => {
 
     try {
       const response = await axiosInstance.post(REGISTER, formValues);
-      console.log("Response from backend: REGISTER", response);
 
-      console.log("Response from backend:", response);
       toast.dismiss(loadingToastId);
       toast.success(response.data.message, {
         style: { background: "black", color: "white" },

@@ -88,7 +88,6 @@ const JobProposal: React.FC = () => {
   
       if (Array.isArray(jobs)) {
         setPostedJobs(jobs);
-        console.log("fetchPostedJobs", jobs);
         setAllJobs((prevJobs) => [...prevJobs, ...jobs]);
       } else {
         setPostedJobs([]);
@@ -113,7 +112,6 @@ const JobProposal: React.FC = () => {
         response: { dbValues: Proposal[]; jobDocuments: Job[] } | null;
       }>(`${GetAllProposals}/${userId}`);
       if (res.data.response && res.data.response.dbValues) {
-        console.log("fetchSentProposals", res.data.response);
         setSentProposals(res.data.response.dbValues);
         setJobDocuments(res.data.response.jobDocuments || []);
       } else {
@@ -143,7 +141,6 @@ const JobProposal: React.FC = () => {
           ...prevDocs,
           ...(res.data.response?.jobDocuments || []),
         ]);
-        console.log("fetchReceivedProposals", res.data.response);
       } else {
         setReceivedProposals([]);
       }
@@ -171,7 +168,6 @@ const JobProposal: React.FC = () => {
       const res = await axiosInstance.post(`${PROPOSALSTATUS}/${proposalId}`, {
         action,
       });
-      console.log("res", res);
 
       setReceivedProposals((prevProposals) =>
         prevProposals.map((proposal) =>

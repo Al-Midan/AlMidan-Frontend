@@ -1,6 +1,5 @@
 const GoogleButton = () => {
   const handleGoogleLogin = () => {
-    console.log("hello");
     
     window.open(`http://localhost:5000/user-service/auth/google/callback`, "_self");
   };

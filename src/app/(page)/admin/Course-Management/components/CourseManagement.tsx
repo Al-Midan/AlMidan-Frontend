@@ -49,7 +49,7 @@ const CoursesPage = () => {
     try {
       router.push(`Course-Management/${courseId}`)
     } catch (error) {
-     console.log("An error occurred while Going to Course Details Page Admin", error);
+     console.error("An error occurred while Going to Course Details Page Admin", error);
     }
   }
 

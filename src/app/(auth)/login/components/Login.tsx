@@ -62,7 +62,6 @@ const Login = () => {
     }
 
     // If no errors, proceed with form submission
-    console.log("formValues", formValues);
     const loadingToastId = toast.loading("Processing", {
       style: { background: "black", color: "white" },
       position: "top-center",
@@ -70,7 +69,6 @@ const Login = () => {
 
     try {
       const response = await axiosInstance.post(LOGIN, formValues);
-      console.log("Response from backend:", response);
 
       // Extracting the user data from the response
       const userData = response.data.user || response.data;
@@ -83,7 +81,6 @@ const Login = () => {
         return;
       }
       // Storing the user data in localStorage
-      console.log("User data stored", userData);
       dispatch(setUser(userData));
       localStorage.setItem("userData", JSON.stringify(userData));
       localStorage.setItem("accessToken", userData.accessToken);

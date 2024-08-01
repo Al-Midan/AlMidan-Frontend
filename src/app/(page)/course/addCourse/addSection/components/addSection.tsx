@@ -177,7 +177,6 @@ const AddCourse: React.FC = () => {
       style: { background: "black", color: "white" },
       position: "top-center",
     });
-    console.log("sections",sections);
     
     try {
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
@@ -187,10 +186,8 @@ const AddCourse: React.FC = () => {
         sections,
         courseId,
       };
-  console.log("payload",payload);
   
       const response = await axiosInstanceMultipart.post(CREATESECTION, payload);
-      console.log("response", response);
   
       toast.dismiss(loadingToastId);
       toast.success("Course sections added successfully", {

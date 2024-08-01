@@ -17,7 +17,7 @@ const Landing = () => {
         <Courses />
         <Services />
         <Feedback />
-        <Footer />
+
       </div>
     </main>
   );

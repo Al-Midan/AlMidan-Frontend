@@ -71,7 +71,6 @@ const CourseDetailsPage = () => {
           }
         );
         if (userStatusResponse.status === 200) {
-          console.log("userStatusResponse", userStatusResponse);
           if (userStatusResponse.data.response.Enrolled) {
             setUserStatus(userStatusResponse.data.response.Enrolled);
             setCompletedLessons(
@@ -125,7 +124,6 @@ const CourseDetailsPage = () => {
     if (userStatus === "Owner" || userStatus === "Enrolled" || lesson.isFree) {
       setSelectedLesson(lesson);
       setIsDecrypting(true);
-console.log("clicked");
 
       setTimeout(async () => {
         try {
@@ -154,7 +152,6 @@ console.log("clicked");
   };
 
   const handleEnrollClick = async () => {
-    console.log("Preparing Razorpay options...");
     if (!isRazorpayLoaded) {
       console.error("Razorpay SDK is not loaded yet");
       return;
@@ -170,7 +167,6 @@ console.log("clicked");
         description: "Course Enrollment",
         handler: async (response: any) => {
           try {
-            console.log("Preparing Razorpay options...");
             const res = await axiosInstance.post(BUYCOURSE, {
               userData,
               ...courseDetails,

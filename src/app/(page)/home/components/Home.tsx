@@ -91,7 +91,6 @@ const HomePage = () => {
   };
 
   const handlePageChange = (page: number) => {
-  console.log("Page changed to:", page);
   setCurrentPage(page);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };

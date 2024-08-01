@@ -107,7 +107,6 @@ const SkillsAndProposals: React.FC = () => {
           jobDocuments: Skill[];
         };
       }>(`${GetAllSkillProposals}/${userId}`);
-      console.log("fetchSentProposals", res);
 
       if (res.data.response && res.data.response.dbValues) {
         setSentProposals(res.data.response.dbValues);
@@ -134,7 +133,6 @@ const SkillsAndProposals: React.FC = () => {
           jobDocuments: Skill[];
         };
       }>(`${GETSKILLREQUESTS}/${userId}`);
-      console.log("fetchReceivedProposals", res);
 
       if (res.data.response && res.data.response.dbValues) {
         setReceivedProposals(res.data.response.dbValues);

@@ -101,16 +101,11 @@ const NewCoursePage: React.FC = () => {
 
         formData.append("userData", JSON.stringify(userData));
 
-        console.log(
-          "Course Data with User Data:",
-          Object.fromEntries(formData.entries())
-        );
 
         const response = await axiosInstanceMultipart.post(
           CREATECOURSE,
           formData
         );
-        console.log("Response:", response);
         const Message = response.data.message;
 
         if (response.status === 200) {
@@ -120,10 +115,8 @@ const NewCoursePage: React.FC = () => {
             position: "top-center",
           });
           // Handle successful response
-          console.log("Course created successfully:", response.data);
           setTimeout(() => {
             const courseId = response.data.newCourse._id;
-            console.log("courseId", courseId);
 
             router.push(`/course/addCourse/addSection/?courseId=${courseId}`);
           }, 1000);

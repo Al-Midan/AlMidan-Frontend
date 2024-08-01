@@ -258,7 +258,6 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserDataAndCourses = async () => {
       const storedUserData = localStorage.getItem("userData");
-      console.log("storedUserData", storedUserData);
 
       if (storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
@@ -270,7 +269,6 @@ const Profile = () => {
             const response = await axiosInstance.get(
               GETCOURSEWITHID.replace(":id", parsedUserData._id)
             );
-            console.log("response", response.data.response);
 
             setMyCourses(response.data.response);
           } catch (error) {
@@ -281,7 +279,6 @@ const Profile = () => {
     };
     const fetchMyCourseEnrolled = async () => {
       const storedUserData = localStorage.getItem("userData");
-      console.log("storedUserData", storedUserData);
 
       if (storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
@@ -291,7 +288,6 @@ const Profile = () => {
             const response = await axiosInstance.get(
               ENROLLEDDETAILS.replace(":id", parsedUserData._id)
             );
-            console.log("response", response.data.response);
 
             setEnrolledStudents(response.data.response);
           } catch (error) {
@@ -303,7 +299,6 @@ const Profile = () => {
 
     const fetchEnrolledCourses = async () => {
       const storedUserData = localStorage.getItem("userData");
-      console.log("storedUserData", storedUserData);
 
       if (storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
@@ -314,7 +309,6 @@ const Profile = () => {
             const response = await axiosInstance.get(
               GETENROLLEDCOURSEWITHID.replace(":id", parsedUserData._id)
             );
-            console.log("response 2 ", response.data.response);
 
             setEnrolled(response.data.response);
           } catch (error) {
@@ -340,9 +334,7 @@ const Profile = () => {
     }
   };
 
-  console.log("userData", userData);
-  console.log("myCourses", myCourses);
-  console.log("Enrolled", Enrolled);
+
 
   return (
     <div className="min-h-screen bg-black-100">

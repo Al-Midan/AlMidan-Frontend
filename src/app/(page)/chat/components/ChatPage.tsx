@@ -50,7 +50,6 @@ const ChatPage: React.FC = () => {
         const response = await axiosInstance.get(
           `${GETUSERMESSAGE}?ownerEmail=${ownerEmail}`
         );
-        console.log("GETUSERMESSAGE", response);
         setUsers(response.data.response.receiverDetails);
         setCurrentUser(response.data.response.senderEmail);
       } catch (error) {
@@ -113,7 +112,6 @@ const ChatPage: React.FC = () => {
       const response = await axiosInstance.get(
         `${GETSELECTEDMESSAGE}?sender=${currentUser}&receiver=${user.email}`
       );
-      console.log("GETSELECTEDMESSAGE", response);
       setMessages(response.data.response);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -175,7 +173,6 @@ const ChatPage: React.FC = () => {
         `${MESSAGEUPDATE}`,
         updatedMessage
       );
-      console.log("MESSAGEUPDATE", response);
 
       setMessages((prevMessages) =>
         prevMessages.map((m) =>
@@ -215,7 +212,6 @@ const ChatPage: React.FC = () => {
             paymentId: response.razorpay_payment_id,
             timestamp: new Date(),
           });
-          console.log("SKILLPAYMENT", responses);
 
           toast.success("Payment successful!");
         } catch (error) {
