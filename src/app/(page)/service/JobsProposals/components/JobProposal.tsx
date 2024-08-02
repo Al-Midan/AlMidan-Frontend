@@ -306,17 +306,6 @@ const JobProposal: React.FC = () => {
           </button>
         </div>
       )}
-      {proposal.status === "accept" && (
-        <div className="mt-2">
-          <button
-        onClick={()=>handleSendMessage(proposal.userId)}
-
-            className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
-          >
-            Send Message
-          </button>
-        </div>
-      )}
     </motion.div>
   );
 

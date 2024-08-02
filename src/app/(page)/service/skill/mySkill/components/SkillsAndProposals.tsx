@@ -162,9 +162,9 @@ const SkillsAndProposals: React.FC = () => {
         prevProposals.map((proposal) =>
           proposal._id === proposalId
             ? {
-                ...proposal,
-                status: action === "accept" ? "accepted" : "rejected",
-              }
+              ...proposal,
+              status: action === "accept" ? "accepted" : "rejected",
+            }
             : proposal
         )
       );
@@ -265,6 +265,17 @@ const SkillsAndProposals: React.FC = () => {
           </button>
         </div>
       )}
+      {proposal.status === "accept" && (
+        <div className="mt-2">
+          <button
+            onClick={() => router.push('/chat')}
+
+            className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
+          >
+            Send Message
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 
@@ -303,8 +314,8 @@ const SkillsAndProposals: React.FC = () => {
             {activeSection === "skills"
               ? "You haven't added any skills yet."
               : activeSection === "sent"
-              ? "You haven't sent any proposals yet."
-              : "You haven't received any proposals yet."}
+                ? "You haven't sent any proposals yet."
+                : "You haven't received any proposals yet."}
           </p>
           {activeSection === "skills" && (
             <Link href="/service/createSkill">
@@ -348,11 +359,10 @@ const SkillsAndProposals: React.FC = () => {
             setActiveSection("skills");
             setCurrentPage(1);
           }}
-          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
-            activeSection === "skills"
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${activeSection === "skills"
               ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
-          }`}
+            }`}
         >
           My Skills
         </button>
@@ -361,11 +371,10 @@ const SkillsAndProposals: React.FC = () => {
             setActiveSection("sent");
             setCurrentPage(1);
           }}
-          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
-            activeSection === "sent"
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${activeSection === "sent"
               ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
-          }`}
+            }`}
         >
           Sent Proposals
         </button>
@@ -374,11 +383,10 @@ const SkillsAndProposals: React.FC = () => {
             setActiveSection("received");
             setCurrentPage(1);
           }}
-          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${
-            activeSection === "received"
+          className={`px-4 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base ${activeSection === "received"
               ? "bg-indigo-700 text-white"
               : "bg-transparent text-gray-400 hover:text-white"
-          }`}
+            }`}
         >
           Received Proposals
         </button>
@@ -393,8 +401,8 @@ const SkillsAndProposals: React.FC = () => {
               (activeSection === "skills"
                 ? skills
                 : activeSection === "sent"
-                ? sentProposals
-                : receivedProposals
+                  ? sentProposals
+                  : receivedProposals
               ).length / itemsPerPage
             ),
           },
@@ -402,11 +410,10 @@ const SkillsAndProposals: React.FC = () => {
             <button
               key={i}
               onClick={() => paginate(i + 1)}
-              className={`mx-1 px-3 py-1 rounded-full text-sm ${
-                currentPage === i + 1
+              className={`mx-1 px-3 py-1 rounded-full text-sm ${currentPage === i + 1
                   ? "bg-indigo-700 text-white"
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
+                }`}
             >
               {i + 1}
             </button>
