@@ -8,8 +8,8 @@ import axios from "axios";
 import { Toaster, toast } from "sonner";
 import FormValues from "../interface";
 import { useRouter } from "next/navigation";
-import { useDispatch } from 'react-redux';
-import { setUser } from '@/redux/userSlice';
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/userSlice";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { LOGIN } from "@/shared/helpers/endpoints";
 const Login = () => {
@@ -18,7 +18,8 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const backgroundImage ="https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
+  const backgroundImage =
+    "https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,9 +118,9 @@ const Login = () => {
     }
   };
   return (
-    <main className="w-full flex bg-black-100 mx-auto sm:px-10 px-5 overflow-clip">
-      <div className="flex-1 flex items-center  justify-center h-screen">
-        <div className="w-full max-w-md space-y-8 text-white px-4 e sm:px-0">
+    <main className="w-full flex flex-col lg:flex-row bg-black-100 mx-auto px-4 sm:px-6 lg:px-8 overflow-clip">
+      <div className="flex-1 flex items-center justify-center min-h-screen py-12 lg:py-0">
+        <div className="w-full max-w-md space-y-8 text-white px-4 sm:px-0">
           <div className="mt-5 space-y-2 text-center">
             <h3 className="text-2xl font-bold sm:text-3xl">Welcome Back</h3>
             <p className="">
@@ -139,8 +140,7 @@ const Login = () => {
           </div>
           <div className="relative">
             <span className="block w-full h-px bg-black-300"></span>
-
-            <p className="inline-block w-fit text-sm  px-2 mt-2 absolute  inset-x-0 mx-auto">
+            <p className="inline-block w-fit text-sm px-2 mt-2 absolute inset-x-0 mx-auto">
               Or continue with
             </p>
           </div>
@@ -195,21 +195,24 @@ const Login = () => {
           </form>
         </div>
       </div>
-      <div className="relative flex-1 flex items-center justify-center h-screen lg:flex">
+      <div className="relative flex-1 flex items-center justify-center min-h-screen lg:flex">
         <div
-          className="relative z-10 max-w-[600px] max-h-[700px] bg-cover border border-white/5 rounded-3xl"
+          className="relative z-10 w-full max-w-[600px] bg-cover border border-white/5 rounded-3xl"
           style={{
             backgroundImage: `url(${backgroundImage})`,
             height: "calc(100vh - 80px)",
+            maxHeight: "700px",
           }}
         >
-          <div className="px-8 py-14">
-            <h1 className="text-white text-3xl font-bold">Al-Midan</h1>
-            <div className="mt-14 space-y-4">
-              <h3 className="text-white text-2xl font-bold">
+          <div className="px-6 py-10 sm:px-8 sm:py-14">
+            <h1 className="text-white text-2xl sm:text-3xl font-bold">
+              Al-Midan
+            </h1>
+            <div className="mt-10 sm:mt-14 space-y-4">
+              <h3 className="text-white text-xl sm:text-2xl font-bold">
                 Unleash Your Freelance Potential
               </h3>
-              <p className="text-gray-300">
+              <p className="text-gray-300 text-sm sm:text-base">
                 Join our vibrant community of freelancers and unlock a world of
                 opportunities. Elevate your career to new heights, work on
                 exciting projects, and make your mark.
@@ -217,34 +220,34 @@ const Login = () => {
               <div className="flex items-center -space-x-2 overflow-hidden">
                 <img
                   src="https://randomuser.me/api/portraits/women/79.jpg"
-                  className="w-9 h-9 rounded-full border-2 border-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white"
                   alt="User Avatar"
                 />
                 <img
                   src="https://api.uifaces.co/our-content/donated/xZ4wg2Xj.jpg"
-                  className="w-9 h-9 rounded-full border-2 border-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white"
                   alt="User Avatar"
                 />
                 <img
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=a72ca28288878f8404a795f39642a46f"
-                  className="w-9 h-9 rounded-full border-2 border-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white"
                   alt="User Avatar"
                 />
                 <img
                   src="https://randomuser.me/api/portraits/men/86.jpg"
-                  className="w-9 h-9 rounded-full border-2 border-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white"
                   alt="User Avatar"
                 />
                 <img
                   src="https://images.unsplash.com/photo-1510227272981-87123e259b17?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=3759e09a5b9fbe53088b23c615b6312e"
-                  className="w-9 h-9 rounded-full border-2 border-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-white"
                   alt="User Avatar"
                 />
-                <p className="text-sm text-gray-400 font-medium translate-x-5">
+                <p className="text-xs sm:text-sm text-gray-400 font-medium translate-x-5">
                   Join 5,000+ users
                 </p>
               </div>
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 space-y-2 sm:space-y-0">
                 <a
                   href="#"
                   className="text-white hover:text-gray-300 transition-colors duration-300"
