@@ -29,6 +29,12 @@ export async function middleware(request: NextRequest) {
     "/complaints",
   ];
 
+  // If it's the login page and there are tokens, attempt to verify and redirect
+  if (request.nextUrl.pathname === "/login" && (accessToken || refreshToken)) {
+    console.log("User accessing login page with tokens present, verifying...");
+    return verifyTokenAndRedirectHome(request, accessToken, refreshToken);
+  }
+
   // If it's an auth route and there's no access token, allow access
   if (authRoutes.includes(request.nextUrl.pathname) && !accessToken) {
     console.log("Unauthenticated user accessing auth route, allowing access");
@@ -45,6 +51,51 @@ export async function middleware(request: NextRequest) {
   return NextResponse.redirect(new URL("/login", request.url));
 }
 
+async function verifyTokenAndRedirectHome(
+  request: NextRequest,
+  accessToken: string | undefined,
+  refreshToken: string | undefined
+) {
+  if (accessToken) {
+    try {
+      const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_KEY);
+      const { payload } = await jwtVerify(accessToken, secret);
+
+      const response = await axiosInstance.get(USERVALUES, {
+        params: { email: (payload as { email: string }).email },
+      });
+      
+      if (response.data && response.data.data) {
+        if (response.data.isBlocked) {
+          console.log("User is blocked");
+          const res = NextResponse.redirect(new URL("/login", request.url));
+          res.cookies.delete("access_token");
+          res.cookies.delete("refresh_token");
+          return res;
+        }
+
+        const userRole = response.data.data.roles;
+
+        if (userRole === "admin") {
+          console.log("Admin user, redirecting to admin home");
+          return NextResponse.redirect(new URL("/admin", request.url));
+        } else {
+          console.log("Regular user, redirecting to user home");
+          return NextResponse.redirect(new URL("/home", request.url));
+        }
+      } else {
+        console.log("Invalid user data received");
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
+    } catch (error) {
+      console.error("Token verification failed:", error);
+      return handleTokenRefresh(request, refreshToken);
+    }
+  }
+
+  return handleTokenRefresh(request, refreshToken);
+}
+
 async function verifyTokenAndRedirect(
   request: NextRequest,
   accessToken: string | undefined,
@@ -59,35 +110,41 @@ async function verifyTokenAndRedirect(
       const response = await axiosInstance.get(USERVALUES, {
         params: { email: (payload as { email: string }).email },
       });
-      if (response.data.isBlocked) {
-        console.log("User is blocked");
-        const res = NextResponse.redirect(new URL("/login", request.url));
-        res.cookies.delete("access_token");
-        res.cookies.delete("refresh_token");
-        return res;
-      }
-
-      const isAdmin = response.data.data.roles === "admin";
-      const currentPath = request.nextUrl.pathname;
-
-      if (isAdmin) {
-        if (!currentPath.startsWith("/admin")) {
-          console.log(
-            "Admin accessing non-admin route, redirecting to admin home"
-          );
-          return NextResponse.redirect(new URL("/admin", request.url));
+      
+      if (response.data && response.data.data) {
+        if (response.data.isBlocked) {
+          console.log("User is blocked");
+          const res = NextResponse.redirect(new URL("/login", request.url));
+          res.cookies.delete("access_token");
+          res.cookies.delete("refresh_token");
+          return res;
         }
+
+        const userRole = response.data.data.roles;
+        const currentPath = request.nextUrl.pathname;
+
+        if (userRole === "admin") {
+          if (!currentPath.startsWith("/admin")) {
+            console.log(
+              "Admin accessing non-admin route, redirecting to admin home"
+            );
+            return NextResponse.redirect(new URL("/admin", request.url));
+          }
+        } else {
+          if (currentPath.startsWith("/admin")) {
+            console.log(
+              "Non-admin user attempting to access admin route, redirecting to user home"
+            );
+            return NextResponse.redirect(new URL("/home", request.url));
+          }
+        }
+
+        console.log("Access granted");
+        return NextResponse.next();
       } else {
-        if (currentPath.startsWith("/admin")) {
-          console.log(
-            "Non-admin user attempting to access admin route, redirecting to user home"
-          );
-          return NextResponse.redirect(new URL("/home", request.url));
-        }
+        console.log("Invalid user data received");
+        return NextResponse.redirect(new URL("/login", request.url));
       }
-
-      console.log("Access granted");
-      return NextResponse.next();
     } catch (error) {
       console.error("Token verification failed:", error);
       return handleTokenRefresh(request, refreshToken);

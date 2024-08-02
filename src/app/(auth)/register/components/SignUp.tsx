@@ -1,8 +1,6 @@
 "use client";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import GithubButton from "@/components/ui/GithubButton";
-import GoogleButton from "@/components/ui/GoogleButton";
 import { useState } from "react";
 import FormValues from "../interface";
 import axios from "axios";
@@ -17,7 +15,8 @@ const Register = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [formData, setFormData] = useState<FormValues | null>(null);
-  const backgroundImage ="https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
+  const backgroundImage =
+    "https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -81,12 +80,7 @@ const Register = () => {
         }
       }, 2000);
     } catch (error) {
-      if (
-        axios.isAxiosError(error) &&
-        error.response
-        // &&
-        // error.response.status === 401
-      ) {
+      if (axios.isAxiosError(error) && error.response) {
         const errorMessage = error.response.data.message;
         toast.dismiss(loadingToastId);
         toast.error(errorMessage, {
@@ -123,11 +117,6 @@ const Register = () => {
               </Link>
             </p>
           </div>
-
-          {/* <div className="grid grid-cols-2 gap-x-2">
-            <GoogleButton />
-            <GithubButton />
-          </div> */}
           <div className="relative">
             <span className="block w-full h-px bg-black-300"></span>
 
