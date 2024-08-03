@@ -1,8 +1,8 @@
-import React from "react";
-import Admin from "./components/Admin";
+  import React from "react";
+  import Admin from "./components/Admin";
 
-const page = () => {
-  return <Admin />;
-};
+  const page = () => {
+    return <Admin />;
+  };
 
-export default page;
+  export default page;
