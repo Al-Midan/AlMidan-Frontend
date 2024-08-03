@@ -22,10 +22,12 @@ interface Section {
   sectionId: string;
   _id: string;
 }
+
 interface EnrolledStudent {
   email: string;
-  studentName: string;
+  studentname: string;
 }
+
 interface Course {
   courseCategory: string;
   courseDescription: string;
@@ -39,7 +41,20 @@ interface Course {
   _id: string;
   isBlock: boolean;
 }
-const EnrolledStudentsTable = ({ students, itemsPerPage = 10 }) => {
+const LoadingSpinner: React.FC = () => (
+  <div className="flex justify-center items-center h-screen">
+    <motion.div
+      className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full"
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+    />
+  </div>
+);
+
+const EnrolledStudentsTable: React.FC<{
+  students: EnrolledStudent[];
+  itemsPerPage?: number;
+}> = ({ students, itemsPerPage = 10 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(students.length / itemsPerPage);
 
@@ -48,28 +63,28 @@ const EnrolledStudentsTable = ({ students, itemsPerPage = 10 }) => {
   const currentStudents = students.slice(startIndex, endIndex);
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="bg-gray-900 shadow-xl rounded-lg overflow-hidden border border-gray-800">
+      <table className="min-w-full divide-y divide-gray-800">
+        <thead className="bg-gray-800">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Student Name
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Email
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-gray-900 divide-y divide-gray-800">
           {currentStudents.map((student, index) => (
             <tr
               key={index}
-              className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+              className="hover:bg-gray-800 transition-colors duration-200"
             >
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-300">
                 {student.studentname}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                 {student.email}
               </td>
             </tr>
@@ -77,26 +92,26 @@ const EnrolledStudentsTable = ({ students, itemsPerPage = 10 }) => {
         </tbody>
       </table>
       {totalPages > 1 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div className="bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-800">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-400">
                 Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
                 <span className="font-medium">
                   {Math.min(endIndex, students.length)}
@@ -117,8 +132,8 @@ const EnrolledStudentsTable = ({ students, itemsPerPage = 10 }) => {
                       onClick={() => setCurrentPage(page)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                         currentPage === page
-                          ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          ? "z-10 bg-gray-700 border-gray-600 text-blue-300"
+                          : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
                       }`}
                     >
                       {page}
@@ -133,7 +148,11 @@ const EnrolledStudentsTable = ({ students, itemsPerPage = 10 }) => {
     </div>
   );
 };
-const CoursePagination = ({ courses, itemsPerPage = 3 }) => {
+
+const CoursePagination: React.FC<{
+  courses: Course[];
+  itemsPerPage?: number;
+}> = ({ courses, itemsPerPage = 3 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(courses.length / itemsPerPage);
 
@@ -151,22 +170,22 @@ const CoursePagination = ({ courses, itemsPerPage = 3 }) => {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentCourses.map((course: any) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentCourses.map((course: Course) => (
               <CourseCard key={course._id} course={course} />
             ))}
           </div>
         </motion.div>
       </AnimatePresence>
-      <div className="mt-8 flex justify-center">
+      <div className="mt-6 flex justify-center">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}
             onClick={() => setCurrentPage(page)}
-            className={`mx-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+            className={`mx-1 px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
               currentPage === page
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-indigo-100"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
             }`}
           >
             {page}
@@ -176,50 +195,55 @@ const CoursePagination = ({ courses, itemsPerPage = 3 }) => {
     </div>
   );
 };
-
-const CourseCard = ({ course }: { course: Course }) => (
-  <div className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105">
+const CourseCard: React.FC<{ course: Course }> = ({ course }) => (
+  <div className="bg-gray-900 rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 border border-gray-800">
     <img
       src={course.courseImage}
       alt={course.courseName}
-      className="w-full h-48 object-cover"
+      className="w-full h-40 object-cover"
     />
-    <div className="p-6">
-      <h3 className="text-xl font-bold mb-2 text-gray-800">
+    <div className="p-4">
+      <h3 className="text-lg font-semibold mb-2 text-gray-100 truncate">
         {course.courseName}
       </h3>
-      <p className="text-sm text-gray-600 mb-4">
-        {course.courseDescription.length > 100
-          ? `${course.courseDescription.substring(0, 100)}...`
+      <p className="text-sm text-gray-400 mb-3 h-12 overflow-hidden">
+        {course.courseDescription.length > 80
+          ? `${course.courseDescription.substring(0, 80)}...`
           : course.courseDescription}
       </p>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-indigo-600 font-bold text-lg">
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-blue-400 font-bold">
           ${course.coursePrice.toFixed(2)}
         </span>
-        <span className="text-sm font-medium px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+        <span className="text-xs font-medium px-2 py-1 bg-gray-800 text-gray-300 rounded-full">
           {course.courseCategory}
         </span>
       </div>
       {course.isBlock && (
-        <p className="text-sm text-red-600 font-medium">
+        <p className="text-xs text-red-400 font-medium mb-2">
           Waiting for admin approval
         </p>
       )}
+      <Link
+        href={`/course/${course._id}`}
+        className="block w-full text-center px-4 py-2 bg-gray-800 text-blue-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
+      >
+        View Course
+      </Link>
     </div>
   </div>
 );
 
-const NoCourses = () => {
+const NoCourses: React.FC = () => {
   const router = useRouter();
   return (
-    <div className="text-center py-16 bg-gray-50 rounded-xl">
-      <p className="text-2xl text-gray-600 mb-6">
+    <div className="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+      <p className="text-xl text-gray-300 mb-6">
         You don&apos;t have any courses yet. 📚
       </p>
       <button
         onClick={() => router.push("/course/addCourse")}
-        className="px-8 py-3 bg-indigo-600 text-white rounded-full text-lg font-medium hover:bg-indigo-700 transition duration-300 shadow-md"
+        className="px-6 py-2 bg-gray-800 text-blue-300 rounded-md text-lg font-medium hover:bg-gray-700 transition duration-300 shadow-md"
       >
         Create Your First Course 🚀
       </button>
@@ -227,16 +251,16 @@ const NoCourses = () => {
   );
 };
 
-const NoEnrolledCourses = () => {
+const NoEnrolledCourses: React.FC = () => {
   const router = useRouter();
   return (
-    <div className="text-center py-16 bg-gray-50 rounded-xl">
-      <p className="text-2xl text-gray-600 mb-6">
+    <div className="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+      <p className="text-xl text-gray-300 mb-6">
         You haven&apos;t enrolled in any courses yet. 🎓
       </p>
       <button
         onClick={() => router.push("/course")}
-        className="px-8 py-3 bg-indigo-600 text-white rounded-full text-lg font-medium hover:bg-indigo-700 transition duration-300 shadow-md"
+        className="px-6 py-2 bg-gray-800 text-blue-300 rounded-md text-lg font-medium hover:bg-gray-700 transition duration-300 shadow-md"
       >
         Browse Courses 🔍
       </button>
@@ -244,7 +268,7 @@ const NoEnrolledCourses = () => {
   );
 };
 
-const Profile = () => {
+const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [Enrolled, setEnrolled] = useState<Course[]>([]);
@@ -253,74 +277,46 @@ const Profile = () => {
   const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>(
     []
   );
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserDataAndCourses = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       const storedUserData = localStorage.getItem("userData");
 
       if (storedUserData) {
-        const parsedUserData = JSON.parse(storedUserData);
+        const parsedUserData: UserData = JSON.parse(storedUserData);
         setUserData(parsedUserData);
         setActiveRole(parsedUserData.roles || "student");
 
         if (parsedUserData._id) {
           try {
-            const response = await axiosInstance.get(
-              GETCOURSEWITHID.replace(":id", parsedUserData._id)
-            );
+            const [coursesResponse, enrolledResponse, studentsResponse] =
+              await Promise.all([
+                axiosInstance.get(
+                  GETCOURSEWITHID.replace(":id", parsedUserData._id)
+                ),
+                axiosInstance.get(
+                  GETENROLLEDCOURSEWITHID.replace(":id", parsedUserData._id)
+                ),
+                axiosInstance.get(
+                  ENROLLEDDETAILS.replace(":id", parsedUserData._id)
+                ),
+              ]);
 
-            setMyCourses(response.data.response);
+            setMyCourses(coursesResponse.data.response);
+            setEnrolled(enrolledResponse.data.response);
+            setEnrolledStudents(studentsResponse.data.response);
           } catch (error) {
-            console.error("Error fetching courses:", error);
+            console.error("Error fetching data:", error);
           }
         }
       }
-    };
-    const fetchMyCourseEnrolled = async () => {
-      const storedUserData = localStorage.getItem("userData");
-
-      if (storedUserData) {
-        const parsedUserData = JSON.parse(storedUserData);
-
-        if (parsedUserData._id) {
-          try {
-            const response = await axiosInstance.get(
-              ENROLLEDDETAILS.replace(":id", parsedUserData._id)
-            );
-
-            setEnrolledStudents(response.data.response);
-          } catch (error) {
-            console.error("Error fetching enrolled students:", error);
-          }
-        }
-      }
+      setIsLoading(false);
     };
 
-    const fetchEnrolledCourses = async () => {
-      const storedUserData = localStorage.getItem("userData");
-
-      if (storedUserData) {
-        const parsedUserData = JSON.parse(storedUserData);
-        setUserData(parsedUserData);
-
-        if (parsedUserData._id) {
-          try {
-            const response = await axiosInstance.get(
-              GETENROLLEDCOURSEWITHID.replace(":id", parsedUserData._id)
-            );
-
-            setEnrolled(response.data.response);
-          } catch (error) {
-            console.error("Error fetching courses:", error);
-          }
-        }
-      }
-    };
-
-    fetchUserDataAndCourses();
-    fetchMyCourseEnrolled();
-    fetchEnrolledCourses();
+    fetchData();
   }, []);
 
   const handleRoleToggle = async (role: string) => {
@@ -334,31 +330,33 @@ const Profile = () => {
     }
   };
 
-
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <div className="min-h-screen bg-black-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-10">
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-          <div className="px-6 py-8 bg-indigo-600 text-white">
-            <h1 className="text-4xl font-bold text-center mb-6">
+    <div className="min-h-screen bg-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-gray-900 shadow-2xl rounded-lg overflow-hidden border border-gray-800">
+          <div className="px-6 py-8 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+            <h1 className="text-3xl font-bold text-center mb-6">
               Profile Page 👤
             </h1>
             <div className="flex flex-wrap items-center justify-between">
               <div className="flex items-center">
-                <div className="relative w-24 h-24 mr-6">
+                <div className="relative w-20 h-20 mr-4">
                   {userData?.profilePic ? (
                     <img
                       src={userData.profilePic}
                       alt={userData.username || "Profile"}
-                      className="w-full h-full rounded-full object-cover"
+                      className="w-full h-full rounded-full object-cover border-2 border-blue-400"
                     />
                   ) : (
-                    <div className="w-full h-full bg-indigo-400 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                    <div className="w-full h-full bg-gray-800 rounded-full flex items-center justify-center text-white text-3xl font-bold border-2 border-blue-400">
                       {userData?.username?.charAt(0).toUpperCase() || "?"}
                     </div>
                   )}
-                  <button className="absolute bottom-0 right-0 bg-white text-indigo-600 rounded-full p-2 shadow-md">
+                  <button className="absolute bottom-0 right-0 bg-gray-800 text-blue-300 rounded-full p-1 shadow-md hover:bg-gray-700 transition-colors duration-200">
                     <svg
                       className="w-4 h-4"
                       fill="none"
@@ -376,23 +374,25 @@ const Profile = () => {
                   </button>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold">
+                  <h2 className="text-2xl font-bold text-gray-100">
                     {userData?.username || "No Name"}
                   </h2>
-                  <p className="text-indigo-200 text-lg">
+                  <p className="text-gray-400 text-sm">
                     {userData?.roles || "No roles found"}
                   </p>
                 </div>
               </div>
-              <div className="mt-6 sm:mt-0">
-                <div className="flex items-center space-x-4 mb-4">
-                  <span className="font-semibold text-indigo-100">Role:</span>
+              <div className="mt-4 sm:mt-0">
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="font-semibold text-gray-400 text-sm">
+                    Role:
+                  </span>
                   <button
                     onClick={() => handleRoleToggle("student")}
                     className={`px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
                       activeRole === "student"
-                        ? "bg-white text-indigo-600"
-                        : "bg-indigo-500 text-white hover:bg-indigo-400"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-700 text-gray-300 hover:bg-blue-800"
                     }`}
                   >
                     Student 🎒
@@ -401,8 +401,8 @@ const Profile = () => {
                     onClick={() => handleRoleToggle("teacher")}
                     className={`px-6 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
                       activeRole === "teacher"
-                        ? "bg-white text-indigo-600"
-                        : "bg-indigo-500 text-white hover:bg-indigo-400"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-700 text-gray-300 hover:bg-blue-800"
                     }`}
                   >
                     Teacher 👨‍🏫
@@ -410,14 +410,16 @@ const Profile = () => {
                 </div>
                 <div className="flex gap-4">
                   {activeRole === "teacher" && (
-                    <button                     onClick={() => router.push(`/course/addCourse`)}
-                    className="px-6 py-2 rounded-full text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition duration-200 shadow-md">
+                    <button
+                      onClick={() => router.push(`/course/addCourse`)}
+                      className="px-6 py-2 rounded-full text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition duration-200 shadow-md"
+                    >
                       Add Course ➕
                     </button>
                   )}
                   <button
                     onClick={() => router.push("/profile/editProfile")}
-                    className="px-6 py-2 rounded-full text-sm font-medium bg-white text-indigo-600 hover:bg-indigo-50 transition duration-200 shadow-md"
+                    className="px-6 py-2 rounded-full text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition duration-200 shadow-md"
                   >
                     Edit Profile ✏️
                   </button>
@@ -426,7 +428,7 @@ const Profile = () => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row">
-            <div className="w-full md:w-1/4 px-6 py-8 bg-gray-50 border-r border-gray-200">
+            <div className="w-full md:w-1/4 px-6 py-8 bg-gray-800 border-r border-gray-700">
               <ul className="space-y-4">
                 {[
                   { name: "My Courses", icon: "📚", view: "myCourses" },
@@ -435,21 +437,19 @@ const Profile = () => {
                     icon: "🎓",
                     view: "enrolledCourses",
                   },
-                  { name: "Chats", icon: "💬", view: "chats" },
                   {
                     name: "Course Attendees",
                     icon: "👥",
                     view: "yourCourseEnrolledUsers",
                   },
-                  { name: "History", icon: "📅", view: "history" },
                 ].map((item) => (
                   <li key={item.name}>
                     <a
                       href="#"
                       className={`flex items-center py-2 px-4 rounded-lg font-medium transition-colors duration-200 ${
                         activeView === item.view
-                          ? "bg-indigo-100 text-indigo-800"
-                          : "text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
+                          ? "bg-blue-800 text-white"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
                       }`}
                       onClick={() => item.view && setActiveView(item.view)}
                     >
@@ -460,8 +460,8 @@ const Profile = () => {
                 ))}
               </ul>
             </div>
-            <div className="w-full md:w-3/4 px-6 py-8">
-              <h2 className="text-3xl font-bold mb-8 text-gray-800">
+            <div className="w-full md:w-3/4 px-6 py-8 bg-gray-900">
+              <h2 className="text-3xl font-bold mb-8 text-gray-100">
                 {activeView === "myCourses"
                   ? "My Courses 📚"
                   : activeView === "enrolledCourses"
@@ -486,7 +486,7 @@ const Profile = () => {
                 enrolledStudents.length > 0 ? (
                   <EnrolledStudentsTable students={enrolledStudents} />
                 ) : (
-                  <p className="text-center text-gray-600">
+                  <p className="text-center text-gray-400">
                     No enrolled students found.
                   </p>
                 )

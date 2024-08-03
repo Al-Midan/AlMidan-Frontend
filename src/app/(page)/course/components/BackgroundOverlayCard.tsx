@@ -33,13 +33,11 @@ export function CardDemo({
         )}
         style={{ backgroundImage: `url(${imageUrl || defaultImageUrl})` }}
       >
-        <div className="text relative z-50">
-          <h1 className="font-bold text-xl md:text-3xl text-stone-950 relative">
+        <div className="text relative z-50" >
+          <h1 className="font-bold text-xl md:text-3xl text-stone-300 relative">
             {heading}
           </h1>
-          <p className="font-normal text-base text-stone-950 relative my-4">
-            {description}
-          </p>
+       
           <Link
             href={`/course/${courseId}`}
             className="relative z-10 px-6 py-2 bg-black text-white font-bold rounded-xl block text-xs"
