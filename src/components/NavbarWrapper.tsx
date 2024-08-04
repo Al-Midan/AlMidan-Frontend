@@ -25,6 +25,7 @@ export default function NavbarWrapper() {
     { name: "Profile", link: "/profile" },
     { name: "Complaints", link: "/complaints" },
     { name: "Chat", link: "/chat" },
+    { name: "About", link: "/about" },
     { name: "LogOut", link: "/login" },
   ];
 
