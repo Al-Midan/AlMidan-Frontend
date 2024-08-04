@@ -42,7 +42,7 @@ interface Proposal {
 }
 
 const JobProposal: React.FC = () => {
-  const router = useRouter()
+  const router = useRouter();
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [sentProposals, setSentProposals] = useState<Proposal[]>([]);
@@ -83,9 +83,9 @@ const JobProposal: React.FC = () => {
       const res = await axiosInstance.get<{ response: Job[] | null }>(
         `${GETOURJOBPOST}/${userId}`
       );
-  
+
       const jobs = res.data.response;
-  
+
       if (Array.isArray(jobs)) {
         setPostedJobs(jobs);
         setAllJobs((prevJobs) => [...prevJobs, ...jobs]);
@@ -93,7 +93,7 @@ const JobProposal: React.FC = () => {
         setPostedJobs([]);
         setAllJobs([]);
       }
-  
+
       setLoading((prev) => ({ ...prev, posted: false }));
     } catch (error) {
       console.error("Error fetching posted jobs:", error);
@@ -104,8 +104,7 @@ const JobProposal: React.FC = () => {
       setLoading((prev) => ({ ...prev, posted: false }));
     }
   };
-  
-  
+
   const fetchSentProposals = async (userId: string) => {
     try {
       const res = await axiosInstance.get<{
@@ -134,7 +133,7 @@ const JobProposal: React.FC = () => {
       const res = await axiosInstance.get<{
         response: { dbValues: Proposal[]; jobDocuments: Job[] } | null;
       }>(`${GETJOBREQUESTS}/${userId}`);
-  
+
       if (res.data.response && res.data.response.dbValues) {
         setReceivedProposals(res.data.response.dbValues);
         setJobDocuments((prevDocs) => [
@@ -192,8 +191,8 @@ const JobProposal: React.FC = () => {
       console.error(`Error deleting job post:`, error);
     }
   };
-  const handleSendMessage = (proposalId:string) => {
-    const userData = localStorage.getItem('userData');
+  const handleSendMessage = (proposalId: string) => {
+    const userData = localStorage.getItem("userData");
     if (userData) {
       const parsedUserData = JSON.parse(userData);
       const currentUserId = parsedUserData._id;
@@ -262,21 +261,21 @@ const JobProposal: React.FC = () => {
 
   const renderProposalCard = (proposal: Proposal) => (
     <motion.div
-    key={proposal._id}
-    className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    transition={{ duration: 0.3 }}
-    style={{
-      backdropFilter: "blur(16px) saturate(180%)",
-      backgroundColor: "rgba(17, 25, 40, 0.75)",
-      border: "1px solid rgba(255, 255, 255, 0.125)",
-    }}
-  >
-    <h2 className="text-xl mb-3 text-cyan-400 font-bold">
-      Proposal for Job: {getJobTitle(proposal.jobId)}
-    </h2>
+      key={proposal._id}
+      className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 max-w-sm mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        backdropFilter: "blur(16px) saturate(180%)",
+        backgroundColor: "rgba(17, 25, 40, 0.75)",
+        border: "1px solid rgba(255, 255, 255, 0.125)",
+      }}
+    >
+      <h2 className="text-xl mb-3 text-cyan-400 font-bold">
+        Proposal for Job: {getJobTitle(proposal.jobId)}
+      </h2>
       <p className="text-xs mb-3 line-clamp-2 text-gray-300">
         {proposal.description}
       </p>
@@ -306,6 +305,16 @@ const JobProposal: React.FC = () => {
           </button>
         </div>
       )}
+      {proposal.status === "accept" && (
+        <div className="mt-2">
+          <button
+            onClick={() => router.push("/chat")}
+            className="w-full bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300 text-sm"
+          >
+            Send Message
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 
@@ -317,13 +326,13 @@ const JobProposal: React.FC = () => {
         </div>
       );
     }
-  
+
     if (error[activeSection]) {
       return (
         <div className="text-red-500 text-center">{error[activeSection]}</div>
       );
     }
-  
+
     let items: Job[] | Proposal[] = [];
     switch (activeSection) {
       case "posted":
@@ -336,7 +345,7 @@ const JobProposal: React.FC = () => {
         items = receivedProposals;
         break;
     }
-  
+
     if (items.length === 0) {
       return (
         <div className="text-center">
@@ -357,7 +366,6 @@ const JobProposal: React.FC = () => {
         </div>
       );
     }
-  
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -507,7 +515,6 @@ const JobProposal: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
-     
     </div>
   );
 };
