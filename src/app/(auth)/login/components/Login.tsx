@@ -47,7 +47,7 @@ const Login = () => {
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/;
     if (!passwordRegex.test(formValues.password)) {
       setPasswordError(
-        "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character"
+        "Password Incorrect"
       );
       return;
     } else {
