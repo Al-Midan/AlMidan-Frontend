@@ -138,12 +138,12 @@ const Login = () => {
             <GoogleButton />
             <GithubButton />
           </div> */}
-          <div className="relative">
+          {/* <div className="relative">
             <span className="block w-full h-px bg-black-300"></span>
             <p className="inline-block w-fit text-sm px-2 mt-2 absolute inset-x-0 mx-auto">
               Or continue with
             </p>
-          </div>
+          </div> */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="font-medium">Email</label>
