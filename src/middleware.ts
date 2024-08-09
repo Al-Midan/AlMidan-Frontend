@@ -29,6 +29,17 @@ export async function middleware(request: NextRequest) {
     "/complaints",
   ];
 
+  // Handle the root route "/"
+  if (request.nextUrl.pathname === "/") {
+    if (!accessToken && !refreshToken) {
+      console.log("User accessing root without tokens, allowing access");
+      return NextResponse.next();
+    } else {
+      console.log("User accessing root with tokens, redirecting");
+      return verifyTokenAndRedirectHome(request, accessToken, refreshToken);
+    }
+  }
+
   // If it's the login page and there are tokens, attempt to verify and redirect
   if (request.nextUrl.pathname === "/login" && (accessToken || refreshToken)) {
     console.log("User accessing login page with tokens present, verifying...");
@@ -197,6 +208,7 @@ async function handleTokenRefresh(
 
 export const config = {
   matcher: [
+    "/",
     "/login",
     "/register",
     "/admin/:path*",

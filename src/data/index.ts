@@ -176,11 +176,6 @@ export const socialMedia = [
     href: "https://github.com/MuhammedEasa/",
   },
   {
-    id: 2,
-    img: "/twit.svg",
-    href: "#",
-  },
-  {
     id: 3,
     img: "/link.svg",
     href: "www.linkedin.com/in/muhammed-easa",
