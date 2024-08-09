@@ -134,10 +134,10 @@ const Login = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-2">
+          {/* <div className="grid grid-cols-2 gap-x-2">
             <GoogleButton />
             <GithubButton />
-          </div>
+          </div> */}
           <div className="relative">
             <span className="block w-full h-px bg-black-300"></span>
             <p className="inline-block w-fit text-sm px-2 mt-2 absolute inset-x-0 mx-auto">
