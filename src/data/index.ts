@@ -178,6 +178,6 @@ export const socialMedia = [
   {
     id: 3,
     img: "/link.svg",
-    href: "www.linkedin.com/in/muhammed-easa",
+    href: "https://www.linkedin.com/in/muhammed-easa/",
   },
 ];
