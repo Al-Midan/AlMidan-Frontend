@@ -90,7 +90,7 @@ const Register = () => {
       } else {
         console.error("Error submitting form:", error);
         toast.dismiss(loadingToastId);
-        toast.error("An error occurred while registering the user", {
+        toast.error("An error occurred while login the user", {
           style: { background: "black", color: "white" },
           position: "top-center",
         });
