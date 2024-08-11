@@ -1,4 +1,6 @@
 "use client";
+import { localhost_backend } from "@/shared/helpers/axiosInstance";
+import { GETALLUSERSADMIN } from "@/shared/helpers/endpoints";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
@@ -29,8 +31,7 @@ const UserManagement = () => {
         const accessToken = localStorage.getItem("accessToken");
         const refreshToken = localStorage.getItem("refreshToken");
 
-        const response = await axios.get(
-          "http://localhost:5000/user-service/user-management",
+        const response = await axios.get(`${localhost_backend}/${GETALLUSERSADMIN}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
