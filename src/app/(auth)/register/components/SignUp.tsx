@@ -99,12 +99,11 @@ const Register = () => {
   };
 
   return (
-    <main className="w-full flex bg-black-100 mx-auto sm:px-10 px-5 overflow-clip">
-      <div className="flex-1 flex items-center justify-center h-screen">
-        <div className="w-full max-w-md space-y-8 text-white px-4 sm:px-0">
-          <div className="mt-5 space-y-2 text-center">
+    <main className="w-full flex flex-col lg:flex-row bg-black-100 mx-auto px-4 sm:px-6 lg:px-8 overflow-clip">
+      <div className="flex-1 flex items-center justify-center min-h-screen py-12 lg:py-0">
+        <div className="w-full max-w-md space-y-8 text-white">
+          <div className="space-y-2 text-center">
             <h3 className="text-2xl font-bold sm:text-3xl">
-              {" "}
               Welcome👋 Sign Up Today!🚀
             </h3>
             <p className="">
@@ -119,8 +118,7 @@ const Register = () => {
           </div>
           <div className="relative">
             <span className="block w-full h-px bg-black-300"></span>
-
-            <p className="inline-block w-fit text-sm px-2 mt-2 absolute inset-x-0 mx-auto">
+            <p className="inline-block w-fit text-sm bg-black-100 px-2 absolute -top-2 left-1/2 transform -translate-x-1/2">
               Or continue with
             </p>
           </div>
@@ -219,17 +217,16 @@ const Register = () => {
           </AnimatePresence>
         </div>
       </div>
-      <div className="relative flex-1 flex items-center justify-center h-screen lg:flex">
+      <div className="relative flex-1 flex items-center justify-center min-h-screen lg:h-screen py-12 lg:py-0">
         <div
-          className="relative z-10 max-w-[600px] max-h-[700px] bg-cover border border-white/5 rounded-3xl"
+          className="relative z-10 w-full max-w-[600px] h-[500px] lg:h-[700px] bg-cover border border-white/5 rounded-3xl"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            height: "calc(100vh - 80px)",
           }}
         >
-          <div className="px-8 py-14">
+          <div className="px-6 py-10 lg:px-8 lg:py-14 h-full flex flex-col justify-between">
             <h1 className="text-white text-3xl font-bold">Al-Midan</h1>
-            <div className="mt-14 space-y-4">
+            <div className="space-y-4">
               <h3 className="text-white text-2xl font-bold">
                 Unleash Your Freelance Potential
               </h3>
@@ -238,6 +235,7 @@ const Register = () => {
                 opportunities. Elevate your career to new heights, work on
                 exciting projects, and make your mark.
               </p>
+
               <div className="flex items-center -space-x-2 overflow-hidden">
                 <img
                   src="https://randomuser.me/api/portraits/women/79.jpg"
