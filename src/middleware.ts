@@ -187,10 +187,10 @@ async function handleTokenRefresh(
 
         const res = NextResponse.next();
         res.cookies.set("access_token", newAccessToken, {
-          httpOnly: false,      
-          sameSite: "none",  
-          secure: false,     
-          maxAge: 3600, 
+          httpOnly: true,
+          sameSite: "strict",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 3600, // 1 hour
         });
         return res;
       }
