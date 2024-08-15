@@ -1,4 +1,3 @@
-// coursePage.tsx
 "use client";
 
 import axiosInstance from "@/shared/helpers/axiosInstance";
@@ -70,8 +69,11 @@ const Course = () => {
   }, []);
 
   return (
-    <div className="bg-black-100 min-h-screen flex flex-col items-center p-10 pt-14">
+    <div className="bg-black-100 min-h-screen flex flex-col items-center p-10 pt-14 relative">
       <Toaster />
+      <button className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        My Courses
+      </button>
       <h1 className="text-center text-4xl mt-16 font-bold">Courses</h1>
       <br />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
