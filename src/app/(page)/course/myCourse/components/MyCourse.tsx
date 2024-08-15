@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import axios from "axios";
 import axiosInstance from "@/shared/helpers/axiosInstance";
-import { GETCOURSEWITHID } from "@/shared/helpers/endpoints";
+import { DELETECOURSE, GETCOURSEWITHID } from "@/shared/helpers/endpoints";
 import { motion } from "framer-motion";
 
 interface Course {
@@ -24,7 +24,7 @@ const MyCourse = () => {
 
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
-    const parsedUserData = storedUserData ? JSON.parse(storedUserData) : null;    
+    const parsedUserData = storedUserData ? JSON.parse(storedUserData) : null;
     const fetchData = async () => {
       if (!parsedUserData) {
         toast.error("User data not found", {
@@ -39,7 +39,9 @@ const MyCourse = () => {
       });
 
       try {
-        const response = await axiosInstance.get(GETCOURSEWITHID.replace(":id", parsedUserData._id));
+        const response = await axiosInstance.get(
+          GETCOURSEWITHID.replace(":id", parsedUserData._id)
+        );
         const Message = response.data.message;
         if (response.status === 200) {
           toast.dismiss(loadingToastId);
@@ -79,9 +81,15 @@ const MyCourse = () => {
     console.log(`Editing course with id: ${id}`);
   };
 
-  const handleDelete = (id: string) => {
-    // Implement delete functionality
-    console.log(`Deleting course with id: ${id}`);
+  const handleDelete = async (id: string) => {
+    try {
+      await axiosInstance.delete(`${DELETECOURSE}/${id}`);
+      setValues((prevCourse) =>
+        prevCourse.filter((course) => course._id !== id)
+      );
+    } catch (error) {
+      console.error(`Error deleting job post:`, error);
+    }
   };
 
   return (
