@@ -82,15 +82,31 @@ const MyCourse = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const loadingToastId = toast.loading("Deleting course...", {
+      style: { background: "black", color: "white" },
+      position: "top-center",
+    });
+  
     try {
       await axiosInstance.delete(`${DELETECOURSE}/${id}`);
       setValues((prevCourse) =>
         prevCourse.filter((course) => course._id !== id)
       );
+      toast.dismiss(loadingToastId);
+      toast.success("Course deleted successfully", {
+        style: { background: "black", color: "white" },
+        position: "top-center",
+      });
     } catch (error) {
-      console.error(`Error deleting job post:`, error);
+      toast.dismiss(loadingToastId);
+      console.error(`Error deleting course:`, error);
+      toast.error("Error deleting course", {
+        style: { background: "black", color: "white" },
+        position: "top-center",
+      });
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100">
