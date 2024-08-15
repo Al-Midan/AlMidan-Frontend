@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import axios from "axios";
 import { CardDemo } from "./BackgroundOverlayCard";
-
+import { useRouter } from "next/navigation";
 // Define an interface for the course structure
 interface Course {
   courseCategory: string;
@@ -24,7 +24,7 @@ interface Course {
 
 const Course = () => {
   const [values, setValues] = useState<Course[]>([]);
-
+  const router = useRouter()
   useEffect(() => {
     const fetchData = async () => {
       const loadingToastId = toast.loading("Processing", {
@@ -71,7 +71,7 @@ const Course = () => {
   return (
     <div className="bg-black-100 min-h-screen flex flex-col items-center p-10 pt-14 relative">
       <Toaster />
-      <button className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      <button onClick={()=>router.push('/course/myCourse')} className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         My Courses
       </button>
       <h1 className="text-center text-4xl mt-16 font-bold">Courses</h1>
