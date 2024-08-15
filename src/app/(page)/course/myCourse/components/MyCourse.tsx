@@ -23,14 +23,23 @@ const MyCourse = () => {
   const [values, setValues] = useState<Course[]>([]);
 
   useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    const parsedUserData = storedUserData ? JSON.parse(storedUserData) : null;    
     const fetchData = async () => {
+      if (!parsedUserData) {
+        toast.error("User data not found", {
+          style: { background: "black", color: "white" },
+          position: "top-center",
+        });
+        return;
+      }
       const loadingToastId = toast.loading("Processing", {
         style: { background: "black", color: "white" },
         position: "top-center",
       });
 
       try {
-        const response = await axiosInstance.get(GETCOURSEWITHID);
+        const response = await axiosInstance.get(GETCOURSEWITHID.replace(":id", parsedUserData._id));
         const Message = response.data.message;
         if (response.status === 200) {
           toast.dismiss(loadingToastId);
