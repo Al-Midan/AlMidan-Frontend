@@ -38,7 +38,7 @@ const MyCourse = () => {
             style: { background: "black", color: "white" },
             position: "top-center",
           });
-          setValues(response.data.allCourse);
+          setValues(response.data.response);
           setTimeout(() => {
             toast.dismiss(success);
           }, 1000);
