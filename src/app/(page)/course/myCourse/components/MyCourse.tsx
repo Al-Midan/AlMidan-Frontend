@@ -5,6 +5,7 @@ import axios from "axios";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { DELETECOURSE, GETCOURSEWITHID } from "@/shared/helpers/endpoints";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface Course {
   courseCategory: string;
@@ -21,7 +22,7 @@ interface Course {
 
 const MyCourse = () => {
   const [values, setValues] = useState<Course[]>([]);
-
+  const router = useRouter()
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
     const parsedUserData = storedUserData ? JSON.parse(storedUserData) : null;
@@ -77,6 +78,7 @@ const MyCourse = () => {
   }, []);
 
   const handleEdit = (id: string) => {
+    router.push(`/course/myCourse/${id}`)
     // Implement edit functionality
     console.log(`Editing course with id: ${id}`);
   };
