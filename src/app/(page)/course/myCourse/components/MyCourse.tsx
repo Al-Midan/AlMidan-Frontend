@@ -85,47 +85,57 @@ const MyCourse = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gray-900 text-gray-100">
       <Toaster />
-      <nav className="bg-gray-900 p-4 sticky top-0 z-10">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">My Courses</h1>
-        </div>
-      </nav>
-      <div className="container mx-auto mt-8 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <h1 className="text-4xl font-extrabold tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+          My Courses
+        </h1>
+      </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {values.map((course, index) => (
             <motion.div
               key={course._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
+              className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
             >
-              <img
-                src={course.courseImage}
-                alt={course.courseName}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">
+              <div className="relative">
+                <img
+                  src={course.courseImage}
+                  alt={course.courseName}
+                  className="w-full h-56 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
+                <div className="absolute bottom-4 left-4">
+                  <span className="inline-block bg-purple-600 text-white text-xs px-3 py-1 rounded-full uppercase tracking-wide">
+                    {course.courseCategory}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-2 text-white">
                   {course.courseName}
                 </h2>
-                <p className="text-gray-400 mb-4">{course.courseDescription}</p>
+                <p className="text-gray-400 mb-4 line-clamp-2">
+                  {course.courseDescription}
+                </p>
                 <div className="flex justify-between items-center">
-                  <span className="text-green-400 font-bold">
+                  <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
                     ${course.coursePrice}
                   </span>
-                  <div>
+                  <div className="space-x-2">
                     <button
                       onClick={() => handleEdit(course._id)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2 transition-colors duration-200"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(course._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors duration-200"
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                     >
                       Delete
                     </button>
