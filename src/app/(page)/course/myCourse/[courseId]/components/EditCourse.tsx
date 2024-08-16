@@ -1,13 +1,10 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { decrypt } from "@/shared/helpers/decryptFunction";
-import Image from "next/image";
 import { Toaster, toast } from "sonner";
 import { GETCOURSEDETAILS, UPDATECOURSE } from "@/shared/helpers/endpoints";
-
 interface ILesson {
   _id: string;
   title: string;
@@ -219,9 +216,18 @@ const EditCourse = () => {
                       type="text"
                       value={decrypt(lesson.video)}
                       onChange={(e) => handleLessonChange(sectionIndex, lessonIndex, "video", e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-600 rounded-md text-slate-100"
+                      className="w-full px-3 py-2 bg-slate-600 rounded-md text-slate-100 mb-2"
                       placeholder="Video URL"
                     />
+                    <div className="aspect-w-16 aspect-h-9">
+                      <video
+                        src={decrypt(lesson.video)}
+                        controls
+                        className="w-full h-full object-cover rounded-md"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
                   </div>
                 ))}
               </div>
