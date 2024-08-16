@@ -73,7 +73,7 @@ const Course = () => {
       <Toaster />
       <button
         onClick={() => router.push("/course/myCourse")}
-        className="absolute top-4 right-4 bg-black text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-gray-900 transition-colors duration-300 flex items-center"
+        className="absolute top-4 right-4 bg-gray-900 text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-black-100 transition-colors duration-300 flex items-center"
       >
         <span className="text-sm">My Courses</span>
       </button>
