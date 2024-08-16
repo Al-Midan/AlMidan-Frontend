@@ -24,7 +24,7 @@ interface Course {
 
 const Course = () => {
   const [values, setValues] = useState<Course[]>([]);
-  const router = useRouter()
+  const router = useRouter();
   useEffect(() => {
     const fetchData = async () => {
       const loadingToastId = toast.loading("Processing", {
@@ -37,14 +37,14 @@ const Course = () => {
         const Message = response.data.message;
         if (response.status === 200) {
           toast.dismiss(loadingToastId);
-        const success=  toast.success(Message, {
+          const success = toast.success(Message, {
             style: { background: "black", color: "white" },
             position: "top-center",
           });
           setValues(response.data.allCourse);
-          setTimeout(()=>{
+          setTimeout(() => {
             toast.dismiss(success);
-          },1000)
+          }, 1000);
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -71,8 +71,11 @@ const Course = () => {
   return (
     <div className="bg-black-100 min-h-screen flex flex-col items-center p-10 pt-14 relative">
       <Toaster />
-      <button onClick={()=>router.push('/course/myCourse')} className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-        My Courses
+      <button
+        onClick={() => router.push("/course/myCourse")}
+        className="absolute top-4 right-4 bg-black text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-gray-900 transition-colors duration-300 flex items-center"
+      >
+        <span className="text-sm">My Courses</span>
       </button>
       <h1 className="text-center text-4xl mt-16 font-bold">Courses</h1>
       <br />
