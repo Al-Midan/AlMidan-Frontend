@@ -43,7 +43,7 @@ const MyCourse = () => {
         const response = await axiosInstance.get(
           GETCOURSEWITHID.replace(":id", parsedUserData._id)
         );
-        const Message = response.data.message;
+        const Message = response.data.response;
         if (response.status === 200) {
           toast.dismiss(loadingToastId);
           const success = toast.success(Message, {
@@ -53,7 +53,7 @@ const MyCourse = () => {
           setValues(response.data.response);
           setTimeout(() => {
             toast.dismiss(success);
-          }, 1000);
+          }, 10000);
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
