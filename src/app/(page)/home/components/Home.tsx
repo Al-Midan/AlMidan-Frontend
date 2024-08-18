@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Meteors } from "@/components/ui/meteors";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -33,7 +33,12 @@ interface Skill {
   image: string;
 }
 
-const HomePage = () => {
+type ItemType =
+  | (Course & { type: "course" })
+  | (Job & { type: "job" })
+  | (Skill & { type: "skill" });
+
+const HomePage: React.FC = () => {
   const router = useRouter();
   const user = useAppSelector((state: RootState) => state.user);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -41,7 +46,11 @@ const HomePage = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [showContent, setShowContent] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; 
+  const [sortOption, setSortOption] = useState("default");
+  const [itemType, setItemType] = useState<"all" | "course" | "job" | "skill">(
+    "all"
+  );
+  const itemsPerPage = 8;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,20 +72,72 @@ const HomePage = () => {
 
     fetchData();
   }, []);
+  const getItemName = (item: ItemType): string => {
+    if (item.type === "course") return item.courseName;
+    return item.title;
+  };
 
-  const allItems = [
-    ...courses.map((course) => ({ ...course, type: "course" })),
-    ...jobs.map((job) => ({ ...job, type: "job" })),
-    ...skills.map((skill) => ({ ...skill, type: "skill" })),
-  ];
+  const getItemPrice = (item: ItemType): number => {
+    if (item.type === "course") return item.coursePrice;
+    if (item.type === "job") return item.budget;
+    return 0;
+  };
 
-  const totalPages = Math.ceil(allItems.length / itemsPerPage);
-  const paginatedItems = allItems.slice(
+  const getItemDescription = (item: ItemType): string => {
+    if (item.type === "course") return item.courseDescription;
+    return item.description;
+  };
+
+  const getItemImage = (item: ItemType): string => {
+    if (item.type === "course") return item.courseImage;
+    return item.image;
+  };
+  const allItems: ItemType[] = useMemo(
+    () => [
+      ...courses.map((course) => ({ ...course, type: "course" as const })),
+      ...jobs.map((job) => ({ ...job, type: "job" as const })),
+      ...skills.map((skill) => ({ ...skill, type: "skill" as const })),
+    ],
+    [courses, jobs, skills]
+  );
+
+  const filteredItems = useMemo(
+    () =>
+      itemType === "all"
+        ? allItems
+        : allItems.filter((item) => item.type === itemType),
+    [allItems, itemType]
+  );
+
+  const sortedItems = useMemo(() => {
+    let items = [...filteredItems];
+    switch (sortOption) {
+      case "nameAsc":
+        return items.sort((a, b) =>
+          getItemName(a).localeCompare(getItemName(b))
+        );
+      case "nameDesc":
+        return items.sort((a, b) =>
+          getItemName(b).localeCompare(getItemName(a))
+        );
+      case "priceAsc":
+        return items.sort((a, b) => getItemPrice(a) - getItemPrice(b));
+      case "priceDesc":
+        return items.sort((a, b) => getItemPrice(b) - getItemPrice(a));
+      case "type":
+        return items.sort((a, b) => a.type.localeCompare(b.type));
+      default:
+        return items;
+    }
+  }, [filteredItems, sortOption]);
+
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+  const paginatedItems = sortedItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handleCardClick = (item: any) => {
+  const handleCardClick = (item: ItemType) => {
     switch (item.type) {
       case "course":
         router.push(`/course/${item._id}`);
@@ -91,9 +152,11 @@ const HomePage = () => {
   };
 
   const handlePageChange = (page: number) => {
-  setCurrentPage(page);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+    console.log("worked");
+
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black-100 text-white">
@@ -131,16 +194,44 @@ const HomePage = () => {
           Explore Al-Midan
         </h1>
 
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 sm:space-x-2">
+          <select
+            value={itemType}
+            onChange={(e) =>
+              setItemType(e.target.value as "all" | "course" | "job" | "skill")
+            }
+            className="bg-gray-800 text-white p-2 rounded w-full sm:w-auto"
+          >
+            <option value="all">All Items</option>
+            <option value="course">Courses</option>
+            <option value="job">Jobs</option>
+            <option value="skill">Skills</option>
+          </select>
+
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="bg-gray-800 text-white p-2 rounded w-full sm:w-auto"
+          >
+            <option value="default">Default</option>
+            <option value="nameAsc">Name (A-Z)</option>
+            <option value="nameDesc">Name (Z-A)</option>
+            <option value="priceAsc">Price (Low to High)</option>
+            <option value="priceDesc">Price (High to Low)</option>
+            <option value="type">Type</option>
+          </select>
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentPage}
+            key={currentPage + sortOption + itemType}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {paginatedItems.map((item: any) => (
+            {paginatedItems.map((item: ItemType) => (
               <motion.div
                 key={item._id}
                 whileHover={{ scale: 1.05 }}
@@ -150,18 +241,18 @@ const HomePage = () => {
               >
                 <div className="w-full h-36 relative">
                   <Image
-                    src={item.image || item.courseImage}
-                    alt={item.title || item.courseName}
+                    src={getItemImage(item)}
+                    alt={getItemName(item)}
                     layout="fill"
                     objectFit="cover"
                   />
                 </div>
                 <div className="p-3">
                   <h2 className="text-lg font-semibold mb-1">
-                    {item.title || item.courseName}
+                    {getItemName(item)}
                   </h2>
                   <p className="text-gray-400 text-sm mb-2 line-clamp-2">
-                    {item.description || item.courseDescription}
+                    {getItemDescription(item)}
                   </p>
                   {item.type === "course" && (
                     <p className="text-green-400 font-bold text-sm">
@@ -180,14 +271,14 @@ const HomePage = () => {
         </AnimatePresence>
 
         {totalPages > 1 && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-8 cursor-pointer space-x-2 ">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <motion.button
                 key={page}
                 onClick={() => handlePageChange(page)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className={`mx-1 px-3 py-1 rounded ${
+                className={`mx-1 px-3 py-1 rounded z-100 cursor-pointer  ${
                   currentPage === page
                     ? "bg-blue-500 text-white"
                     : "bg-gray-700 text-gray-300"
