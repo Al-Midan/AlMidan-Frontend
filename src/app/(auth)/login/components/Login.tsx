@@ -17,7 +17,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const backgroundImage =
     "https://almidancoursethumbnail.s3.ap-south-1.amazonaws.com/loginpage.webp";
 
@@ -46,20 +45,10 @@ const Login = () => {
     const passwordRegex =
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/;
     if (!passwordRegex.test(formValues.password)) {
-      setPasswordError(
-        "Password Incorrect"
-      );
+      setPasswordError("Password Incorrect");
       return;
     } else {
       setPasswordError("");
-    }
-
-    // Confirm password validation
-    if (formValues.password !== formValues.confirmPassword) {
-      setConfirmPasswordError("Passwords do not match");
-      return;
-    } else {
-      setConfirmPasswordError("");
     }
 
     // If no errors, proceed with form submission
@@ -95,7 +84,7 @@ const Login = () => {
         style: { background: "black", color: "white" },
         position: "top-center",
       });
-      if (userData.roles=="admin") {
+      if (userData.roles == "admin") {
         router.replace("/admin");
       } else {
         router.replace("/home");
@@ -168,21 +157,6 @@ const Login = () => {
               />
               {passwordError && (
                 <p className="text-red-500 mt-1">{passwordError}</p>
-              )}
-            </div>
-            <div>
-              <label className="font-medium">Confirm Password</label>
-              <input
-                type="password"
-                className={`w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border ${
-                  confirmPasswordError
-                    ? "border-red-500"
-                    : "focus:border-indigo-600"
-                } shadow-sm rounded-lg`}
-                name="confirmPassword"
-              />
-              {confirmPasswordError && (
-                <p className="text-red-500 mt-1">{confirmPasswordError}</p>
               )}
             </div>
             <HoverBorderGradient
