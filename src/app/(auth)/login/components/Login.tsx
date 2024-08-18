@@ -26,10 +26,7 @@ const Login = () => {
     const formElements = e.currentTarget.elements;
     const formValues: FormValues = {
       email: (formElements.namedItem("email") as HTMLInputElement).value,
-      password: (formElements.namedItem("password") as HTMLInputElement).value,
-      confirmPassword: (
-        formElements.namedItem("confirmPassword") as HTMLInputElement
-      ).value,
+      password: (formElements.namedItem("password") as HTMLInputElement).value
     };
 
     // Email validation
