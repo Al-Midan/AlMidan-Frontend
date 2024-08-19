@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast, Toaster } from "sonner";
@@ -8,6 +8,7 @@ import axiosInstance, {
   axiosInstanceMultipart,
 } from "@/shared/helpers/axiosInstance";
 import { GETALLJOB, SENDPROPOSAL } from "@/shared/helpers/endpoints";
+
 interface Job {
   _id: string;
   title: string;
@@ -37,6 +38,12 @@ const Services: React.FC = () => {
   const [proposalCV, setProposalCV] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+
+  // New state for search, sort, and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("postedDate");
+  const [filterCategory, setFilterCategory] = useState("All");
+
   useEffect(() => {
     const fetchJobs = async () => {
       const userDataString = localStorage.getItem("userData");
@@ -46,7 +53,6 @@ const Services: React.FC = () => {
       }
       try {
         const response = await axiosInstance.get(GETALLJOB);
-
         setJobs(response.data.response);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -55,9 +61,28 @@ const Services: React.FC = () => {
     fetchJobs();
   }, []);
 
+  const filteredAndSortedJobs = useMemo(() => {
+    return jobs
+      .filter((job) =>
+        job.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter((job) =>
+        filterCategory === "All" ? true : job.category === filterCategory
+      )
+      .sort((a, b) => {
+        if (sortBy === "postedDate") {
+          return new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime();
+        } else if (sortBy === "budget") {
+          return b.budget - a.budget;
+        } else {
+          return a.title.localeCompare(b.title);
+        }
+      });
+  }, [jobs, searchTerm, sortBy, filterCategory]);
+
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = jobs.slice(indexOfFirstJob, indexOfLastJob);
+  const currentJobs = filteredAndSortedJobs.slice(indexOfFirstJob, indexOfLastJob);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -128,6 +153,11 @@ const Services: React.FC = () => {
     }
   };
 
+  const uniqueCategories = useMemo(() => {
+    return ["All", ...Array.from(new Set(jobs.map((job) => job.category)))];
+  }, [jobs]);
+  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -135,20 +165,20 @@ const Services: React.FC = () => {
           <button
             onClick={() => router.push("/service/JobsProposals")}
             className={`
-    flex items-center justify-center
-    px-6 py-3 max-w-fit mx-auto
-    text-sm font-medium text-cyan-300
-    bg-gray-900 bg-opacity-70
-    border border-cyan-500 border-opacity-50
-    rounded-xl
-    shadow-lg shadow-cyan-500/20
-    transition-all duration-300 ease-in-out
-    hover:bg-cyan-900 hover:bg-opacity-30
-    hover:text-cyan-200 hover:border-cyan-400
-    hover:shadow-cyan-500/40
-    focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50
-    active:scale-95
-  `}
+              flex items-center justify-center
+              px-6 py-3 max-w-fit mx-auto
+              text-sm font-medium text-cyan-300
+              bg-gray-900 bg-opacity-70
+              border border-cyan-500 border-opacity-50
+              rounded-xl
+              shadow-lg shadow-cyan-500/20
+              transition-all duration-300 ease-in-out
+              hover:bg-cyan-900 hover:bg-opacity-30
+              hover:text-cyan-200 hover:border-cyan-400
+              hover:shadow-cyan-500/40
+              focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50
+              active:scale-95
+            `}
             style={{
               backdropFilter: "blur(10px) saturate(150%)",
             }}
@@ -173,6 +203,38 @@ const Services: React.FC = () => {
         <h1 className="text-4xl font-bold mb-8 text-center mt-20">
           Job Listings
         </h1>
+
+        {/* Search, Sort, and Filter Controls */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search jobs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-grow bg-gray-800 text-white rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-gray-800 text-white rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          >
+            <option value="postedDate">Sort by Date</option>
+            <option value="budget">Sort by Budget</option>
+            <option value="title">Sort by Title</option>
+          </select>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-gray-800 text-white rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          >
+            {uniqueCategories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentJobs.map((job) => (
             <motion.div
@@ -227,10 +289,10 @@ const Services: React.FC = () => {
             </motion.div>
           ))}
         </div>
-        {jobs.length > jobsPerPage && (
+        {filteredAndSortedJobs.length > jobsPerPage && (
           <div className="mt-8 flex justify-center">
             {Array.from(
-              { length: Math.ceil(jobs.length / jobsPerPage) },
+              { length: Math.ceil(filteredAndSortedJobs.length / jobsPerPage) },
               (_, i) => (
                 <button
                   key={i}
@@ -246,6 +308,7 @@ const Services: React.FC = () => {
           </div>
         )}
       </div>
+
       <AnimatePresence>
         {selectedJob && (
           <motion.div
@@ -334,6 +397,9 @@ const Services: React.FC = () => {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showProposalForm && selectedJob && (
           <motion.div
             key="proposal-form"
