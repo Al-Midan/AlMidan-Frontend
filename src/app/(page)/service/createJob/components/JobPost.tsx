@@ -75,6 +75,11 @@ const JobPostingForm: React.FC = () => {
     }
   };
 
+  const validateDate = (dateString: string): Date => {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? new Date() : date;
+  };
+  
   const validateStep = (step: number): boolean => {
     const stepErrors: Partial<FormData> = {};
     switch (step) {
@@ -90,12 +95,28 @@ const JobPostingForm: React.FC = () => {
       case 3:
         if (!formData.duration) stepErrors.duration = 'Duration is required';
         if (!formData.experienceLevel) stepErrors.experienceLevel = 'Experience level is required';
-        if (!formData.deadline) stepErrors.deadline = 'Deadline is required';
+        if (!formData.deadline) {
+          stepErrors.deadline = 'Deadline is required';
+        } else {
+          const deadlineDate = validateDate(formData.deadline);
+          if (deadlineDate < new Date()) {
+            stepErrors.deadline = 'Deadline cannot be in the past';
+          }
+        }
+        if (!formData.postedDate) {
+          stepErrors.postedDate = 'Posted date is required';
+        } else {
+          const postedDate = validateDate(formData.postedDate);
+          if (postedDate > new Date()) {
+            stepErrors.postedDate = 'Posted date cannot be in the future';
+          }
+        }
         break;
     }
     setErrors(stepErrors);
     return Object.keys(stepErrors).length === 0;
   };
+  
   
   const nextStep = () => {
     if (validateStep(currentStep)) {
