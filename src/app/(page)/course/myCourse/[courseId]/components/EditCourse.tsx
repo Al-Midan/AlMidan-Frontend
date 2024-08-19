@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axiosInstance from "@/shared/helpers/axiosInstance";
 import { decrypt } from "@/shared/helpers/decryptFunction";
 import { Toaster, toast } from "sonner";
@@ -33,15 +33,20 @@ interface ICourseDetails {
 }
 
 const EditCourse = () => {
+  const router = useRouter();
   const { courseId } = useParams();
-  const [courseDetails, setCourseDetails] = useState<ICourseDetails | null>(null);
+  const [courseDetails, setCourseDetails] = useState<ICourseDetails | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCourseDetails = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`${GETCOURSEDETAILS}/${courseId}`);
+      const response = await axiosInstance.get(
+        `${GETCOURSEDETAILS}/${courseId}`
+      );
       if (response.status === 200) {
         setCourseDetails(response.data.courseDetails);
       }
@@ -57,36 +62,53 @@ const EditCourse = () => {
     fetchCourseDetails();
   }, [fetchCourseDetails]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCourseDetails((prev) => (prev ? { ...prev, [name]: value } : null));
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      setCourseDetails((prev) => (prev ? { ...prev, [name]: value } : null));
+    },
+    []
+  );
 
-  const handleSectionChange = useCallback((sectionIndex: number, field: string, value: string) => {
-    setCourseDetails((prev) => {
-      if (!prev) return null;
-      const newSections = [...prev.sections];
-      newSections[sectionIndex] = {
-        ...newSections[sectionIndex],
-        [field]: value,
-      };
-      return { ...prev, sections: newSections };
-    });
-  }, []);
+  const handleSectionChange = useCallback(
+    (sectionIndex: number, field: string, value: string) => {
+      setCourseDetails((prev) => {
+        if (!prev) return null;
+        const newSections = [...prev.sections];
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          [field]: value,
+        };
+        return { ...prev, sections: newSections };
+      });
+    },
+    []
+  );
 
-  const handleLessonChange = useCallback((sectionIndex: number, lessonIndex: number, field: string, value: string | boolean) => {
-    setCourseDetails((prev) => {
-      if (!prev) return null;
-      const newSections = [...prev.sections];
-      const newLessons = [...newSections[sectionIndex].lessons];
-      newLessons[lessonIndex] = { ...newLessons[lessonIndex], [field]: value };
-      newSections[sectionIndex] = {
-        ...newSections[sectionIndex],
-        lessons: newLessons,
-      };
-      return { ...prev, sections: newSections };
-    });
-  }, []);
+  const handleLessonChange = useCallback(
+    (
+      sectionIndex: number,
+      lessonIndex: number,
+      field: string,
+      value: string | boolean
+    ) => {
+      setCourseDetails((prev) => {
+        if (!prev) return null;
+        const newSections = [...prev.sections];
+        const newLessons = [...newSections[sectionIndex].lessons];
+        newLessons[lessonIndex] = {
+          ...newLessons[lessonIndex],
+          [field]: value,
+        };
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          lessons: newLessons,
+        };
+        return { ...prev, sections: newSections };
+      });
+    },
+    []
+  );
 
   const addSection = useCallback(() => {
     setCourseDetails((prev) => {
@@ -104,7 +126,9 @@ const EditCourse = () => {
   const removeSection = useCallback((sectionIndex: number) => {
     setCourseDetails((prev) => {
       if (!prev) return null;
-      const newSections = prev.sections.filter((_, index) => index !== sectionIndex);
+      const newSections = prev.sections.filter(
+        (_, index) => index !== sectionIndex
+      );
       return { ...prev, sections: newSections };
     });
   }, []);
@@ -125,28 +149,42 @@ const EditCourse = () => {
     });
   }, []);
 
-  const removeLesson = useCallback((sectionIndex: number, lessonIndex: number) => {
-    setCourseDetails((prev) => {
-      if (!prev) return null;
-      const newSections = [...prev.sections];
-      newSections[sectionIndex].lessons = newSections[sectionIndex].lessons.filter((_, index) => index !== lessonIndex);
-      return { ...prev, sections: newSections };
-    });
-  }, []);
+  const removeLesson = useCallback(
+    (sectionIndex: number, lessonIndex: number) => {
+      setCourseDetails((prev) => {
+        if (!prev) return null;
+        const newSections = [...prev.sections];
+        newSections[sectionIndex].lessons = newSections[
+          sectionIndex
+        ].lessons.filter((_, index) => index !== lessonIndex);
+        return { ...prev, sections: newSections };
+      });
+    },
+    []
+  );
 
-  const removeVideo = useCallback((sectionIndex: number, lessonIndex: number) => {
-    handleLessonChange(sectionIndex, lessonIndex, "video", "");
-  }, [handleLessonChange]);
+  const removeVideo = useCallback(
+    (sectionIndex: number, lessonIndex: number) => {
+      handleLessonChange(sectionIndex, lessonIndex, "video", "");
+    },
+    [handleLessonChange]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-        console.log("courseDetails",courseDetails);
-        
-      const response = await axiosInstance.put(`${UPDATECOURSE}/${courseId}`, courseDetails);
+      console.log("courseDetails", courseDetails);
+
+      const response = await axiosInstance.put(
+        `${UPDATECOURSE}/${courseId}`,
+        courseDetails
+      );
       if (response.status === 200) {
         toast.success("Course updated successfully");
+        setTimeout(() => {
+          router.push("/course/myCourse");
+        }, 1000);
       }
     } catch (error) {
       console.error("Error updating course:", error);
@@ -163,7 +201,9 @@ const EditCourse = () => {
           <input
             type="text"
             value={section.title}
-            onChange={(e) => handleSectionChange(sectionIndex, "title", e.target.value)}
+            onChange={(e) =>
+              handleSectionChange(sectionIndex, "title", e.target.value)
+            }
             className="w-full px-3 py-2 bg-slate-700 rounded-md text-slate-100 mr-2"
             placeholder="Section Title"
           />
@@ -177,7 +217,9 @@ const EditCourse = () => {
         </div>
         <textarea
           value={section.description}
-          onChange={(e) => handleSectionChange(sectionIndex, "description", e.target.value)}
+          onChange={(e) =>
+            handleSectionChange(sectionIndex, "description", e.target.value)
+          }
           className="w-full px-3 py-2 bg-slate-700 rounded-md text-slate-100 mb-4"
           placeholder="Section Description"
           rows={2}
@@ -189,7 +231,14 @@ const EditCourse = () => {
               <input
                 type="text"
                 value={lesson.title}
-                onChange={(e) => handleLessonChange(sectionIndex, lessonIndex, "title", e.target.value)}
+                onChange={(e) =>
+                  handleLessonChange(
+                    sectionIndex,
+                    lessonIndex,
+                    "title",
+                    e.target.value
+                  )
+                }
                 className="w-full px-3 py-2 bg-slate-600 rounded-md text-slate-100 mr-2"
                 placeholder="Lesson Title"
               />
@@ -203,7 +252,14 @@ const EditCourse = () => {
             </div>
             <textarea
               value={lesson.description}
-              onChange={(e) => handleLessonChange(sectionIndex, lessonIndex, "description", e.target.value)}
+              onChange={(e) =>
+                handleLessonChange(
+                  sectionIndex,
+                  lessonIndex,
+                  "description",
+                  e.target.value
+                )
+              }
               className="w-full px-3 py-2 bg-slate-600 rounded-md text-slate-100 mb-2"
               placeholder="Lesson Description"
               rows={2}
@@ -212,7 +268,14 @@ const EditCourse = () => {
               <input
                 type="checkbox"
                 checked={lesson.isFree}
-                onChange={(e) => handleLessonChange(sectionIndex, lessonIndex, "isFree", e.target.checked)}
+                onChange={(e) =>
+                  handleLessonChange(
+                    sectionIndex,
+                    lessonIndex,
+                    "isFree",
+                    e.target.checked
+                  )
+                }
                 className="mr-2"
               />
               <label className="text-sm text-slate-300">Free Lesson</label>
@@ -248,7 +311,15 @@ const EditCourse = () => {
         </button>
       </div>
     ));
-  }, [courseDetails?.sections, handleSectionChange, handleLessonChange, removeSection, removeLesson, removeVideo, addLesson]);
+  }, [
+    courseDetails?.sections,
+    handleSectionChange,
+    handleLessonChange,
+    removeSection,
+    removeLesson,
+    removeVideo,
+    addLesson,
+  ]);
 
   if (isLoading) {
     return (
@@ -265,7 +336,10 @@ const EditCourse = () => {
         <h1 className="text-3xl font-bold mb-6 text-teal-300">Edit Course</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="courseName" className="block text-sm font-medium text-teal-300 mb-1">
+            <label
+              htmlFor="courseName"
+              className="block text-sm font-medium text-teal-300 mb-1"
+            >
               Course Name
             </label>
             <input
@@ -279,7 +353,10 @@ const EditCourse = () => {
           </div>
 
           <div>
-            <label htmlFor="courseDescription" className="block text-sm font-medium text-teal-300 mb-1">
+            <label
+              htmlFor="courseDescription"
+              className="block text-sm font-medium text-teal-300 mb-1"
+            >
               Course Description
             </label>
             <textarea
@@ -293,7 +370,10 @@ const EditCourse = () => {
           </div>
 
           <div>
-            <label htmlFor="courseCategory" className="block text-sm font-medium text-teal-300 mb-1">
+            <label
+              htmlFor="courseCategory"
+              className="block text-sm font-medium text-teal-300 mb-1"
+            >
               Category
             </label>
             <input
@@ -307,7 +387,10 @@ const EditCourse = () => {
           </div>
 
           <div>
-            <label htmlFor="coursePrice" className="block text-sm font-medium text-teal-300 mb-1">
+            <label
+              htmlFor="coursePrice"
+              className="block text-sm font-medium text-teal-300 mb-1"
+            >
               Price
             </label>
             <input
@@ -321,7 +404,9 @@ const EditCourse = () => {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-teal-300">Sections</h2>
+            <h2 className="text-xl font-semibold mb-4 text-teal-300">
+              Sections
+            </h2>
             {renderedSections}
             <button
               type="button"
