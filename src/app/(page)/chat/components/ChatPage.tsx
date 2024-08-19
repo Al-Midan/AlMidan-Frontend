@@ -61,8 +61,8 @@ const ChatPage: React.FC = () => {
 
     fetchAcceptedProposals();
 
-    const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5004";
+    const socketUrl ="http://13.71.112.129/freelance-service"
+      //process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5004";
     const newSocket = io(socketUrl, {
       transports: ["websocket", "polling"],
     });
