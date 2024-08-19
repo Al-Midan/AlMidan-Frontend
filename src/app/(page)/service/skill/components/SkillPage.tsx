@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance, {
   axiosInstanceMultipart,
@@ -7,6 +7,7 @@ import axiosInstance, {
 import { GETSKILLS, SENDSKILLPROPOSAL } from "@/shared/helpers/endpoints";
 import { toast, Toaster } from "sonner";
 import { useRouter } from "next/navigation";
+
 interface Skill {
   _id: string;
   title: string;
@@ -29,6 +30,11 @@ const SkillPage: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // New state for search, sort, and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("dateAdded");
+  const [filterCategory, setFilterCategory] = useState("All");
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
@@ -82,6 +88,32 @@ const SkillPage: React.FC = () => {
     setSelectedSkill(null);
   };
 
+  // Filter and sort skills
+  const filteredAndSortedSkills = useMemo(() => {
+    return skills
+      .filter((skill) => {
+        const matchesSearch = skill.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              skill.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = filterCategory === "All" || skill.category === filterCategory;
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        if (sortBy === "title") {
+          return a.title.localeCompare(b.title);
+        } else if (sortBy === "yearsOfExperience") {
+          return b.yearsOfExperience - a.yearsOfExperience;
+        } else {
+          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        }
+      });
+  }, [skills, searchTerm, sortBy, filterCategory]);
+
+  // Get unique categories for filter dropdown
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(skills.map((skill) => skill.category));
+    return ["All", ...Array.from(uniqueCategories)];
+  }, [skills]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto relative">
@@ -100,8 +132,40 @@ const SkillPage: React.FC = () => {
         <h1 className="text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
           Discover Amazing Skills
         </h1>
+
+        {/* Search, Sort, and Filter Controls */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+          <input
+            type="text"
+            placeholder="Search skills..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 rounded-lg bg-gray-800 text-white border border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex-grow"
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="p-2 rounded-lg bg-gray-800 text-white border border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          >
+            <option value="dateAdded">Sort by Date</option>
+            <option value="title">Sort by Title</option>
+            <option value="yearsOfExperience">Sort by Experience</option>
+          </select>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="p-2 rounded-lg bg-gray-800 text-white border border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {skills.slice(0, visibleSkills).map((skill) => (
+          {filteredAndSortedSkills.slice(0, visibleSkills).map((skill) => (
             <SkillCard
               key={skill._id}
               skill={skill}
@@ -111,7 +175,7 @@ const SkillPage: React.FC = () => {
             />
           ))}
         </div>
-        {visibleSkills < skills.length && (
+        {visibleSkills < filteredAndSortedSkills.length && (
           <div className="text-center mt-12">
             <Button
               onClick={handleViewMore}
@@ -135,6 +199,7 @@ const SkillPage: React.FC = () => {
     </div>
   );
 };
+
 
 const SkillCard: React.FC<{
   skill: Skill;
