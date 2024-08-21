@@ -191,14 +191,14 @@ const JobProposal: React.FC = () => {
       console.error(`Error deleting job post:`, error);
     }
   };
-  const handleSendMessage = (proposalId: string) => {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      const currentUserId = parsedUserData._id;
-      router.push(`/chat?senderId=${currentUserId}&receiverId=${proposalId}`);
-    }
-  };
+  // const handleSendMessage = (proposalId: string) => {
+  //   const userData = localStorage.getItem("userData");
+  //   if (userData) {
+  //     const parsedUserData = JSON.parse(userData);
+  //     const currentUserId = parsedUserData._id;
+  //     router.push(`/chat?senderId=${currentUserId}&receiverId=${proposalId}`);
+  //   }
+  // };
   const renderJobCard = (job: Job) => (
     <motion.div
       key={job._id}

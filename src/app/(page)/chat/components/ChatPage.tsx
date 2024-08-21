@@ -61,8 +61,10 @@ const ChatPage: React.FC = () => {
 
     fetchAcceptedProposals();
 
-    const socketUrl ="https://peducoggsc.execute-api.ap-south-1.amazonaws.com/freelance-service"
-      //process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5004";
+    //const socketUrl ="https://peducoggsc.execute-api.ap-south-1.amazonaws.com/freelance-service"
+    const socketUrl =
+      "wss://m05s6lh4u4.execute-api.ap-south-1.amazonaws.com/production";
+    //process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5004";
     const newSocket = io(socketUrl, {
       transports: ["websocket", "polling"],
     });
