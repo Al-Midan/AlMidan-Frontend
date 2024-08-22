@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useRouter } from "next/navigation";
 
 const Admin = () => {
@@ -21,33 +21,33 @@ const Admin = () => {
             Explore the various sections to manage users, courses, complaints,
             jobs, and skills.
           </p>
-          <div className="flex flex-col space-y-4 mt-8">
+          <div className="grid grid-cols-2 gap-4 mt-8">
             <button
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold py-2 px-4 rounded-lg shadow-md"
               onClick={() => handleButtonClick("/admin/User-Management")}
             >
               Manage Users
             </button>
             <button
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-gradient-to-br from-green-500 to-teal-500 text-white font-bold py-2 px-4 rounded-lg shadow-md"
               onClick={() => handleButtonClick("/admin/Course-Management")}
             >
               Manage Courses
             </button>
             <button
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-gradient-to-br from-yellow-500 to-orange-500 text-white font-bold py-2 px-4 rounded-lg shadow-md"
               onClick={() => handleButtonClick("/admin/Complaint-Management")}
             >
               Manage Complaints
             </button>
             <button
-              className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white font-bold py-2 px-4 rounded-lg shadow-md"
               onClick={() => handleButtonClick("/admin/Job-Management")}
             >
               Manage Jobs
             </button>
             <button
-              className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-gradient-to-br from-pink-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow-md"
               onClick={() => handleButtonClick("/admin/Skill-Management")}
             >
               Manage Skills
